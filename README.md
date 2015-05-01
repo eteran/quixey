@@ -2,6 +2,15 @@
 Quixey
 ======
 
+Quixey is a C-ish scripting language where I toy around with a few ideas that I
+have found interesting over the years. It inherits a many things from C, such as 
+the scoping rules, most operators, and general curly brace syntax. However, unlike 
+C, it has a native string type, `foreach`, lambdas, an `auto` type, and much more.
+
+I don't intend for this language to be taken particularly seriously, but it was fun
+to develop.
+
+
 ## Supported Escape Sequences:
 * `\'`    : Single quote
 * `\"`    : Double quote
@@ -82,7 +91,12 @@ Quixey
 
 	for(i = 0; i < 10; i += 1) { }
 	for(int i = 0; i < 10; i += 1) { }
-	
+
+`foreach`:
+
+
+	foreach(auto e : a) {}
+
 `do`:
 
     do { } while(x);
@@ -105,9 +119,18 @@ Quixey
 	auto a2 = 5;
 	auto a3 = 'C';
 	auto a4 = a2;
+
+## Arrays
+
+Arrays are heterogenious, and are created via array literals so far:
+
+    auto x = ['a', 'b', 'c', 1234, "HELLO", [1, 2, 3, 4], function() { printf("W00t!\n"); }];
 	
-lamdas are also supported, and can only be assigned to a variable 
-of type `auto`:
+See `test4.qc` for some advanced usage of them such as type deduction.
+
+## Lambdas
+
+lamdas aresupported, and can only be assigned to a variable of type `auto`:
 	
 	auto f = function() {
 		puts("hello world");
