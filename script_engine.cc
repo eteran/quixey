@@ -427,7 +427,7 @@ void script_engine::prescan() {
 		if(is_type(token_)) {
 
 			// save data type
-			const int data_type = token_.type();
+			const token::Type data_type = token_.type();
 			get_token();
 
 			if(token_.type() == token::IDENTIFIER) {
@@ -578,7 +578,7 @@ variable &script_engine::declare_local_foreach() {
 
 	// save var type
 	// TODO: make it get this from a general type system
-	const int var_type = token_.type();
+	const token::Type var_type = token_.type();
 
 	if(!is_type(token_)) {
 		throw type_expected();
@@ -626,7 +626,7 @@ void script_engine::declare_variable(F func) {
 
 	// save var type
 	// TODO: make it get this from a general type system
-	const int var_type = token_.type();
+	const token::Type var_type = token_.type();
 
 	if(!is_type(token_)) {
 		throw type_expected();
@@ -1022,7 +1022,7 @@ void script_engine::get_parameter_metadata(const std::vector<variable> &argument
 
 			// link parameter type with argument already on
 			// local var stack
-			const int type = token_.type();
+			const token::Type type = token_.type();
 
 			switch(type) {
 			case token::STRING:
@@ -2273,7 +2273,7 @@ void script_engine::atom(variable &value) {
 		// like: // string("hello") or just string()
 		if(is_type(token_) && peek_token().type() == token::LPAREN) {
 			
-			int var_type = token_.type();
+			token::Type var_type = token_.type();
 		
 			get_token();
 			
