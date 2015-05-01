@@ -95,12 +95,16 @@ Quixey
 
 	return 0;
 	
-`int`, `char`, `string`:
+`int`, `char`, `string`. `auto`
 
 	int x = 5;
 	char y;
 	string s = "hello";
 	char ch = s[3];
+	auto a1 = "hello";
+	auto a2 = 5;
+	auto a3 = 'C';
+	auto a4 = a2;
 	
 lamdas are also supported, and can only be assigned to a variable 
 of type `auto`:
