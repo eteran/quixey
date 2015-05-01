@@ -3,13 +3,53 @@ Quixey
 ======
 
 Quixey is a C-ish scripting language where I toy around with a few ideas that I
-have found interesting over the years. It inherits a many things from C, such as 
-the scoping rules, most operators, and general curly brace syntax. However, unlike 
-C, it has a native `string` type, `foreach`, lambdas, an `auto` type, and much more.
+have found interesting over the years. It inherits a many things from C, such 
+as the scoping rules, most operators, and general curly brace syntax. However, 
+unlike C, it has a native `string` type, `foreach`, lambdas, an `auto` type, 
+and much more.
 
-I don't intend for this language to be taken particularly seriously, but it was fun
-to develop.
+I don't intend for this language to be taken particularly seriously, but it 
+was fun to develop.
 
+An interesting property of the implementation of the `auto` keyword is that
+since it is defined as assuming the type of the first assignment to it **not**
+is that it can have a different type in different scopes... But it can never 
+change types in a given scope. For example:
+
+	auto foo(int x) {
+		if(x) {
+			return "Hello";
+		} else {
+			return 42;
+		}
+	}
+	
+	// since this function returns the auto type, we must capture the result
+	// in an auto type as well. 
+	auto n1 = foo(1); // n == "Hello" and is of type string
+	auto n2 = foo(0); // n == 42 and is of type int
+	
+	// Now we can use is_integer and is_string to decide what to do with the 
+	// values as needed.
+	
+Aditionally, for similar reasons, the following is perfectly legal:
+
+    auto n;
+	if(func()) {
+		n = "A String!";
+	} else {
+		n = 123;
+	}
+	
+	// at this point n is one of the two possible types depending on the result
+	// of func()
+	
+However, you cannot change the type once it is set. So unlike weakly typed 
+languages. **The following is not allowed in quixey**.
+
+    auto x = 1;
+	x = 'A'; // ERROR: cannot change type!
+	
 
 ## Supported Escape Sequences:
 * `\'`    : Single quote
