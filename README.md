@@ -2,7 +2,7 @@
 Quixey
 ======
 
-Supported Escape Sequences:
+## Supported Escape Sequences:
 * `\'`    : Single quote
 * `\"`    : Double quote
 * `\\`    : Backslash
@@ -16,12 +16,11 @@ Supported Escape Sequences:
 * `\xnnn` : Hexadecimal number (nnn)
 * `\nnn`  :  number (nnn)
 
-Note: in octal and hex decimal escape sequences, there is no limit on the number
+**Note**: in octal and hex decimal escape sequences, there is no limit on the number
 	  of digits but the least significant digits will be used (as happens in gcc).
-	  So for example '\x12345678' is functionally the same as
-	  '\x78'
+	  So for example `'\x12345678'` is functionally the same as `'\x78'`
 
-Supported Operators:
+## Supported Operators:
 
 * `/=`  : divide left by right and assign to left
 * `/`   : divide left by right
@@ -55,13 +54,14 @@ Supported Operators:
 * `<=`  : test if left is less than or equal to right
 * `<`   : test if left is less than right
 
-Supported Types:
- * Note: modifiers such as unsigned are not supported
+## Supported Types:
 
-char
-int
-string
-auto
+* `char`
+* `int`
+* `string`
+* `auto` (assumes the type of the first thing assigned to it)
+
+**Note**: modifiers such as unsigned are not supported
 
 Supported Keywords:
 
