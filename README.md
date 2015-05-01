@@ -112,5 +112,7 @@ of type `auto`:
 	auto f = function() {
 		puts("hello world");
 	};
+	
+	f(); // prints "hello world"
 
 lambdas also, always have the return type of `auto`.
