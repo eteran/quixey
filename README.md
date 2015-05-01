@@ -17,8 +17,8 @@ Quixey
 * `\nnn`  :  number (nnn)
 
 **Note**: in octal and hex decimal escape sequences, there is no limit on the number
-	  of digits but the least significant digits will be used (as happens in gcc).
-	  So for example `'\x12345678'` is functionally the same as `'\x78'`
+          of digits but the least significant digits will be used (as happens in gcc).
+          So for example `'\x12345678'` is functionally the same as `'\x78'`
 
 ## Supported Operators:
 
@@ -63,47 +63,49 @@ Quixey
 
 **Note**: modifiers such as unsigned are not supported
 
-Supported Keywords:
+## Supported Keywords:
 
- * Note: unlike C/C++ keywords like if, else, for, do, while REQUIRE the curly
- 		 braces, they are not optional
+**Note** : unlike C/C++ keywords like if, else, for, do, while **require** the 
+           curly braces, they are not optional
 
-if, else:
+`if`, `else`:
 
 	if(x) { }
 	if(x) { } else { }
 	if(x) { } else if(y) { }
 	if(x) { } else if(y) { } else { }
 
-for:
+`for`:
 
- * Note: you may declare a variable in the initialization part of the
-         for loop, this variable only exists inside the loop.
+** Note**: you may declare a variable in the initialization part of the
+         for loop, this variable only exists inside the loop. Just like in C++.
 
 	for(i = 0; i < 10; i += 1) { }
 	for(int i = 0; i < 10; i += 1) { }
 	
-do:
+`do`:
 
-	do { } while(x);
+    do { } while(x);
 	
-while:
+`while`:
 
-	while(x) { }
+    while(x) { }
 	
-return:
+`return`:
 
 	return 0;
 	
-int, char, string:
+`int`, `char`, `string`:
 	int x = 5;
 	char y;
 	string s = "hello";
 	char ch = s[3];
 	
 lamdas are also supported, and can only be assigned to a variable 
-of type "auto":
+of type `auto`:
 	
-auto f = function() { puts("hello world"); };
+	auto f = function() {
+		puts("hello world");
+	};
 
-lambdas also, always have the return type of "auto".
+lambdas also, always have the return type of `auto`.
