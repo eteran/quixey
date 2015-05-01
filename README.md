@@ -3,18 +3,18 @@ Quixey
 ======
 
 Supported Escape Sequences:
-\'	: Single quote
-\"	: Double quote
-\\	: Backslash
-\a	: Audible bell
-\b	: Backspace
-\f	: Formfeed
-\n	: Newline
-\r	: Carriage return
-\t	: Horizontal tab
-\v	: Vertical tab
-\xnnn 	Hexadecimal number (nnn)
-\nnn 	Octal number (nnn)
+* `\'`	: Single quote
+* `\"`	: Double quote
+* `\\`	: Backslash
+* `\a`	: Audible bell
+* `\b`	: Backspace
+* `\f`	: Formfeed
+* `\n`	: Newline
+* `\r`	: Carriage return
+* `\t`	: Horizontal tab
+* `\v`	: Vertical tab
+* `\xnnn` 	Hexadecimal number (nnn)
+* `\nnn` 	Octal number (nnn)
 
 Note: in octal and hex decimal escape sequences, there is no limit on the number
 	  of digits but the least significant digits will be used (as happens in gcc).
@@ -23,37 +23,37 @@ Note: in octal and hex decimal escape sequences, there is no limit on the number
 
 Supported Operators:
 
-/=	: divide left by right and assign to left
-/	: divide left by right
-&=	: binary AND left and right and assign to left
-&&	: logical AND left and right
-&	: binary AND left and right
-|=	: binary OR left and right and assign to left
-||	: logical OR left and right
-|	: binary OR left and right
-^=	: XOR left and right and assign to left
-^	: XOR left and right
-~	: compliment unary operand
-==	: test if left equals right
-=	: assign right to left
-!=	: test if left does not equal right
-!	: logical NOT of unary operand
-+=	: add left and right and assign to left
-+	: add left and right
--=	: subtract right from left and assign to left
--	: subtract right from left
-*=	: multiply left and right and assign to left
-*	: multiply left and right
-%=	: modulo divide left by right and assign to left
-%	: modulo divide left by right
->>=	: right shift left by right and assign to left
->>	: right shift left by right
->=	: test if left is greater than or equal to right
->	: test if left is greater than right
-<<=	: left shift left by right and assign to left
-<<	: left shift left by right
-<=	: test if left is less than or equal to right
-<	: test if left is less than right
+* /=	: divide left by right and assign to left
+* /	: divide left by right
+* &=	: binary AND left and right and assign to left
+* &&	: logical AND left and right
+* &	: binary AND left and right
+* |=	: binary OR left and right and assign to left
+* ||	: logical OR left and right
+* |	: binary OR left and right
+* ^=	: XOR left and right and assign to left
+* ^	: XOR left and right
+* ~	: compliment unary operand
+* ==	: test if left equals right
+* =	: assign right to left
+* !=	: test if left does not equal right
+* !	: logical NOT of unary operand
+* +=	: add left and right and assign to left
+* +	: add left and right
+* -=	: subtract right from left and assign to left
+* -	: subtract right from left
+* *=	: multiply left and right and assign to left
+* *	: multiply left and right
+* %=	: modulo divide left by right and assign to left
+* %	: modulo divide left by right
+* >>=	: right shift left by right and assign to left
+* >>	: right shift left by right
+* >=	: test if left is greater than or equal to right
+* >	: test if left is greater than right
+* <<=	: left shift left by right and assign to left
+* <<	: left shift left by right
+* <=	: test if left is less than or equal to right
+* <	: test if left is less than right
 
 Supported Types:
  * Note: modifiers such as unsigned are not supported
