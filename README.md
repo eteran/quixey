@@ -169,7 +169,7 @@ languages. **The following is not allowed in quixey**.
 
 ## Arrays
 
-Arrays are heterogenious, and are created via array literals so far:
+Arrays are heterogeneous, and are created via array literals so far:
 
     auto x = ['a', 'b', 'c', 1234, "HELLO", [1, 2, 3, 4], function() { printf("W00t!\n"); }];
 	
