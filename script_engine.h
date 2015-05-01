@@ -76,9 +76,6 @@ public:
 	bool load_program(const std::string &name);
 	int start(const std::string &function);
 
-public:
-	typedef void (script_engine::*push_func_t)(const variable &, const std::string &);
-
 private:
 	address_t pop_function();
 	bool is_keyword(const std::string &s) const;
