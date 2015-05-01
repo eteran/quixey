@@ -96,6 +96,7 @@ Quixey
 	return 0;
 	
 `int`, `char`, `string`:
+
 	int x = 5;
 	char y;
 	string s = "hello";
