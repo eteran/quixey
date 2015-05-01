@@ -121,7 +121,7 @@ languages. **The following is not allowed in quixey**.
 
 ## Supported Keywords:
 
-**Note** : unlike C/C++ keywords like if, else, for, do, while **require** the 
+**Note** : unlike C/C++ keywords like `if`, `else`, `for`, `do`, `while` **require** the 
            curly braces, they are not optional
 
 `if`, `else`:
@@ -133,8 +133,8 @@ languages. **The following is not allowed in quixey**.
 
 `for`:
 
-** Note**: you may declare a variable in the initialization part of the
-         for loop, this variable only exists inside the loop. Just like in C++.
+**Note**: you may declare a variable in the initialization part of the
+          for loop, this variable only exists inside the loop. Just like in C++.
 
 	for(i = 0; i < 10; i += 1) { }
 	for(int i = 0; i < 10; i += 1) { }
