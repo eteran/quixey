@@ -12,8 +12,8 @@ I don't intend for this language to be taken particularly seriously, but it
 was fun to develop.
 
 An interesting property of the implementation of the `auto` keyword is that
-since it is defined as assuming the type of the first assignment to it **not**
-is that it can have a different type in different scopes... But it can never 
+since it is defined as assuming the type of the first assignment to it, is 
+that it can have a different type in different scopes... But it can never 
 change types in a given scope. For example:
 
 	auto foo(int x) {
@@ -43,6 +43,13 @@ Aditionally, for similar reasons, the following is perfectly legal:
 	
 	// at this point n is one of the two possible types depending on the result
 	// of func()
+	
+Of course for "poor mans templates", you can use `auto` for function parameters 
+as well.
+
+    auto func(auto n) {
+		// do something with n depending on the type!
+	}
 	
 However, you cannot change the type once it is set. So unlike weakly typed 
 languages. **The following is not allowed in quixey**.
