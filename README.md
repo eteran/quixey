@@ -189,14 +189,14 @@ lambdas also, always have the return type of `auto`.
 
 
 ## Built-in Functions
-* `int size(auto x); // returns the length of an array or string
-* `int puts(string s); // just like C's puts
-* `int getche(); // gets 1 character from stdin
-* `int getnum(); // gets an integer from stdin
-* `int putchar(char ch); // puts a character to stdout
-* `int is_integer(auto x); // returns non-zero if the parameter is an integer
-* `int is_character(auto x); // returns non-zero if the parameter is a character
-* `int is_string(auto x); // returns non-zero if the parameter is a string
-* `int is_function(auto x); // returns non-zero if the parameter is an function or lambda
-* `int is_array(auto x); // returns non-zero if the parameter is an array
-* `int printf(string s, ...); // just like C's printf, an experiement in supporting variadic functions (may not stick around)
+* `int size(auto x); // returns the length of an array or string`
+* `int puts(string s); // just like C's puts`
+* `int getche(); // gets 1 character from stdin`
+* `int getnum(); // gets an integer from stdin`
+* `int putchar(char ch); // puts a character to stdout`
+* `int is_integer(auto x); // returns non-zero if the parameter is an integer`
+* `int is_character(auto x); // returns non-zero if the parameter is a character`
+* `int is_string(auto x); // returns non-zero if the parameter is a string`
+* `int is_function(auto x); // returns non-zero if the parameter is an function or lambda`
+* `int is_array(auto x); // returns non-zero if the parameter is an array`
+* `int printf(string s, ...); // just like C's printf, an experiement in supporting variadic functions (may not stick around)`
