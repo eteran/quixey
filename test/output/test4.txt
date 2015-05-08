@@ -1,0 +1,17 @@
+Array(
+C: a
+C: b
+C: c
+I: 1234
+S: HELLO
+Array(
+Array(
+I: 1
+I: 2
+I: 3
+I: 4
+)
+)
+F: W00t!
+)
+e

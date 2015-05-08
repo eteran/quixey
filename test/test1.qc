@@ -30,7 +30,6 @@ int test(int a, int b, char c, string d) {
 //-----------------------------------------------------------------------------
 int main() {
 
-
 	printf("%d\n", G);
 
 	test(5, 10, 'A', "TESTING");
@@ -66,7 +65,6 @@ int main() {
 	}
 
 
-	
 	i = -(-5);
 
 	printf("%d\n", i);
@@ -97,7 +95,7 @@ int main() {
 				{
 				
 					// output a title
-					puts("RPGScript Demo\n");
+					puts("quixey Demo\n");
 				}
 			}
 		}
@@ -193,7 +191,7 @@ int sum(int num) {
 // Name: print_alpha
 //-----------------------------------------------------------------------------
 int print_alpha() {
-	for(auto ch : "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
+	for(char ch : "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
 		putchar(ch);
 	}
 	

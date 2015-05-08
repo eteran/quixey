@@ -1,0 +1,58 @@
+15
+5,10,A,TESTING
+-1
+z = 78
+0 %
+TESING LOCALS 1 = 1
+TESING LOCALS 2 = 2
+CHAR TEST 'A'
+5
+z = 78
+tesing escape sequences: '"\
+	
+d = 4660
+
+d is something else!
+quixey Demo
+
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+testing testing 123
+testing assignment
+a == 2
+b == 6
+
+testing left shift operator
+[a <<= 3] == 16
+
+testing several bitwise operations
+[a = ( ~a ^ b << 1) >> 1] == -15
+
+testing bitwise AND
+[a &= 7] == 1
+
+testing assignment
+a == 456
+b == 123
+
+testing XOR swap trick
+a == 123
+b == 456
+
+testing multiple assignment..
+a == 5
+b == 5
+
+this number of bits set in a is: 2
+
+enter a number (0 to quit):
+1 summed is 1
+2 summed is 3
+3 summed is 6
+4 summed is 10
+5 summed is 15
+6 summed is 21
+7 summed is 28
+8 summed is 36
+9 summed is 45
+10 summed is 55
+enter a number (0 to quit):
