@@ -422,13 +422,13 @@ void script_engine::register_function(const std::string &name, F func) {
 // Desc: tokenizes the whole program array and places it
 //       into program_
 //-----------------------------------------------------------------------------
-void script_engine::tokenize() {
+void script_engine::tokenize(std::vector<char>::const_iterator first, std::vector<char>::const_iterator last) {
 	// this will quickly run through the program
 	// tokenizing as it goes and pushing it the tokens onto
 	// our list... this is our sort of "compiling"
-	auto it = source_.begin();
+	auto it = first;
 	do {
-		token_ = process_token(it, source_.end());
+		token_ = process_token(it, last);
 		program_.push_back(token_);
 	} while(token_.type() != token::FINISHED);
 }
@@ -597,8 +597,8 @@ std::vector<char> script_engine::load_preprocessed_file(const std::string &name)
 // Name: load_program
 //-----------------------------------------------------------------------------
 bool script_engine::load_program(const std::string &name) {
-	source_ = load_preprocessed_file(name);
-	tokenize();
+	std::vector<char> source = load_preprocessed_file(name);
+	tokenize(source.begin(), source.end());
 	prescan();
 	return false;
 }

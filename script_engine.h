@@ -55,7 +55,6 @@ private:
 	std::unordered_set<std::string> types_;
 	keywords_t                      keywords_;
 	builtin_functions_t             builtin_functions_;
-	std::vector<char>               source_;
 	std::vector<token>              program_;
 	std::stack<address_t>           call_stack_;
 
@@ -73,7 +72,7 @@ public:
 	token &get_token();
 	void reset();
 	void prescan();
-	void tokenize();
+	void tokenize(std::vector<char>::const_iterator first, std::vector<char>::const_iterator last);
 	bool load_program(const std::string &name);
 	int start(const std::string &function);
 
