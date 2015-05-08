@@ -67,13 +67,16 @@ bool skip_comments(In &it, In end) {
 
 		// c style comments
 		} else if(it != end && *it == '*') {
-			do {
+				
+			do {				
 				// find end of comment
 				while(it != end && *it != '*') {
 					++it;
 				}
 
-				++it;
+				if(it != end) {
+					++it;
+				}
 			} while(it != end && *it != '/');
 
 			if(it == end) {
@@ -427,10 +430,15 @@ void script_engine::tokenize(std::vector<char>::const_iterator first, std::vecto
 	// tokenizing as it goes and pushing it the tokens onto
 	// our list... this is our sort of "compiling"
 	auto it = first;
-	do {
-		token_ = process_token(it, last);
-		program_.push_back(token_);
-	} while(token_.type() != token::FINISHED);
+	try {		
+		do {
+			token_ = process_token(it, last);
+			program_.push_back(token_);
+		} while(token_.type() != token::FINISHED);
+	} catch(error &e) {	
+		e.line_number = std::count(first, it, '\n') + 1;
+		throw;
+	}
 }
 
 //-----------------------------------------------------------------------------

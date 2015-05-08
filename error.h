@@ -8,6 +8,8 @@ struct error : std::exception {
 	virtual const char *what() const throw() {
 		return "error";
 	}
+	
+	int line_number = -1;
 };
 
 #include "syntax_error.h"

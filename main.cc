@@ -22,9 +22,12 @@ int main(int argc, char *argv[]) {
 		}
 		
 		return scripter.start("main");
-	} catch(const std::exception &e) {
+	} catch(const error &e) {
 		std::cerr << "-------------------------------" << std::endl;
 		std::cerr << "An Error Occurred: " << e.what() << std::endl;
+		if(e.line_number >= 0) {
+		std::cerr << "On Line Number: " << e.line_number << std::endl;
+		}
 		std::cerr << "-------------------------------" << std::endl;
 	}
 }
