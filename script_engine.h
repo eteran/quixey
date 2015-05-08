@@ -82,13 +82,10 @@ private:
 	bool is_keyword(const std::string &s) const;
 	bool is_type(const std::string &s) const;
 	bool is_type(const token &tok) const;
-	bool is_valid(address_t address) const;
 	bool is_variable(const std::string &name) const;
 	bool is_variable(const token &tok) const;
 	bool is_function(const std::string &name) const;
 	bool is_function(const token &tok) const;
-	bool skip_comments();
-	char process_char();
 	const function &get_function(const std::string &name) const;
 	int exec_do();
 	int exec_for();
@@ -114,21 +111,19 @@ private:
 	void destroy_scope();
 	void find_eob();
 	void get_parameter_metadata(const std::vector<variable> &arguments, std::vector<std::string> &names);
-	void process_token();
 	void push_function();
 	void push_global(const variable &v, const std::string &name);
 	void push_local(const variable &v, const std::string &name);
 	void put_back();
-	void skip_whitespace();
 	std::vector<char> load_preprocessed_file(const std::string &name);
 
 	template <class F>
 	variable &declare_variable(F func);
+	
+	template <class In>
+	token process_token(In &it, In end);
 
 public:
-	unsigned int line_number(address_t offset) const;
-	unsigned int line_number() const { return line_number(program_counter_); }
-
 	const token &current_token() const { return token_; }
 
 public:

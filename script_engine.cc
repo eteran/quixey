@@ -29,6 +29,157 @@ bool is_odigit(char c) {
 }
 
 //-----------------------------------------------------------------------------
+// Name: skip_whitespace
+//-----------------------------------------------------------------------------
+template <class In>
+void skip_whitespace(In &it, In end) {
+
+	using std::isspace;
+
+	// skip over white space
+	while(it != end && isspace(*it)) {
+		++it;
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Name: skip_comments
+//-----------------------------------------------------------------------------
+template <class In>
+bool skip_comments(In &it, In end) {
+
+	if(it == end) {
+		return false;
+	}
+
+	const In original_pc = it;
+
+	if(*it == '/') {
+		++it;
+
+		// c++ style comments
+		if(it != end && *it == '/') {
+			while(it != end && *it != '\n') {
+				++it;
+			}
+			return true;
+
+
+		// c style comments
+		} else if(it != end && *it == '*') {
+			do {
+				// find end of comment
+				while(it != end && *it != '*') {
+					++it;
+				}
+
+				++it;
+			} while(it != end && *it != '/');
+
+			if(it == end) {
+				throw unexpected_eof();
+			}
+
+			++it;
+			return true;
+
+		// not a comment
+		} else {
+			it = original_pc;
+		}
+	} else if(*it == '#') {
+		++it;
+
+		// shell style comments
+		while(it != end && *it != '\n') {
+			++it;
+		}
+		return true;	
+	}
+
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+// Name: process_char
+// Desc: processes a character constant (assumes is either in a string or a
+//       quoted char constant)
+//-----------------------------------------------------------------------------
+template <class In>
+char process_char(In &it, In end) {
+
+	using std::isxdigit;
+
+	if(it == end) {
+		return '\0';
+	}
+
+	char temp_char;
+
+	// is it an escape sequence?
+	if(*it == '\\') {
+
+		std::string temp_string;
+
+		// skip past escape char
+		++it;
+
+		if(it == end) {
+			throw unexpected_eof();
+		}
+
+		// which special sequence is it?
+		switch(*it) {
+		case '\'': temp_char = '\''; break;
+		case '\"': temp_char = '\"'; break;
+		case '\\': temp_char = '\\'; break;
+		case '0':  temp_char = '\0'; break;
+		case 'a':  temp_char = '\a'; break;
+		case 'b':  temp_char = '\b'; break;
+		case 'f':  temp_char = '\f'; break;
+		case 'n':  temp_char = '\n'; break;
+		case 'r':  temp_char = '\r'; break;
+		case 't':  temp_char = '\t'; break;
+		case 'v':  temp_char = '\v'; break;
+		case 'x':
+			++it;
+			while(it != end && isxdigit(*it)) {
+				temp_string += *it;
+				++it;
+			}
+
+			if(it == end) {
+				throw unexpected_eof();
+			}
+
+			temp_char = static_cast<char>(stoi(temp_string, nullptr, 16));
+			--it;
+			break;
+		default:
+			while(it != end && is_odigit(*it)) {
+				temp_string += *it;
+				++it;
+			}
+
+			if(it == end) {
+				throw unexpected_eof();
+			}
+
+			temp_char = static_cast<char>(stoi(temp_string, nullptr, 8));
+			--it;
+			break;
+		}
+
+	} else {
+		temp_char = *it;
+	}
+
+	++it;
+
+	return temp_char;
+}
+
+//-----------------------------------------------------------------------------
 // Name: call_size
 //-----------------------------------------------------------------------------
 int call_size(std::string s) {
@@ -242,20 +393,6 @@ script_engine::script_engine() : block_depth_(0), prescan_(false) {
 	reset();
 }
 
-
-//-----------------------------------------------------------------------------
-// Name: line_number
-//-----------------------------------------------------------------------------
-unsigned int script_engine::line_number(address_t offset) const {
-
-	// TODO: take into account includes
-	if(!is_valid(offset)) {
-		offset = 0;
-	}
-
-	return std::count(source_.begin(), source_.begin() + offset, '\n') + 1;
-}
-
 //-----------------------------------------------------------------------------
 // Name: create_scope
 //-----------------------------------------------------------------------------
@@ -289,13 +426,11 @@ void script_engine::tokenize() {
 	// this will quickly run through the program
 	// tokenizing as it goes and pushing it the tokens onto
 	// our list... this is our sort of "compiling"
-	const address_t p = program_counter_;
+	auto it = source_.begin();
 	do {
-		process_token();
+		token_ = process_token(it, source_.end());
 		program_.push_back(token_);
 	} while(token_.type() != token::FINISHED);
-
-	program_counter_ = p;
 }
 
 //-----------------------------------------------------------------------------
@@ -454,7 +589,6 @@ std::vector<char> script_engine::load_preprocessed_file(const std::string &name)
 		ret = std::vector<char>(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 	}
 	
-	
 	imports_.pop();
 	return ret;
 }
@@ -465,6 +599,7 @@ std::vector<char> script_engine::load_preprocessed_file(const std::string &name)
 bool script_engine::load_program(const std::string &name) {
 	source_ = load_preprocessed_file(name);
 	tokenize();
+	prescan();
 	return false;
 }
 
@@ -548,7 +683,7 @@ int script_engine::start(const std::string &function_name) {
 	program_counter_ = func.offset();
 
 	// intialize our token to point to main
-	token_ = token(program_counter_, token::IDENTIFIER, function_name);
+	token_ = token(token::IDENTIFIER, function_name);
 
 	// back up to opening (
 	--program_counter_;
@@ -1370,457 +1505,304 @@ token &script_engine::peek_token() {
 }
 
 //-----------------------------------------------------------------------------
-// Name: is_valid
-//-----------------------------------------------------------------------------
-bool script_engine::is_valid(address_t address) const {
-	return address < source_.size();
-}
-
-//-----------------------------------------------------------------------------
-// Name: skip_comments
-//-----------------------------------------------------------------------------
-bool script_engine::skip_comments() {
-
-	if(!is_valid(program_counter_)) {
-		return false;
-	}
-
-	const address_t original_pc = program_counter_;
-
-	if(source_[program_counter_] == '/') {
-		++program_counter_;
-
-		// c++ style comments
-		if(is_valid(program_counter_) && source_[program_counter_] == '/') {
-			while(is_valid(program_counter_) && source_[program_counter_] != '\n') {
-				++program_counter_;
-			}
-			return true;
-
-
-		// c style comments
-		} else if(is_valid(program_counter_) && source_[program_counter_] == '*') {
-			do {
-				// find end of comment
-				while(is_valid(program_counter_) && source_[program_counter_] != '*') {
-					++program_counter_;
-				}
-
-				++program_counter_;
-			} while(is_valid(program_counter_) && source_[program_counter_] != '/');
-
-			if(!is_valid(program_counter_)) {
-				throw unexpected_eof();
-			}
-
-			++program_counter_;
-			return true;
-
-		// not a comment
-		} else {
-			program_counter_ = original_pc;
-		}
-	} else if(source_[program_counter_] == '#') {
-		++program_counter_;
-
-		// shell style comments
-		while(is_valid(program_counter_) && source_[program_counter_] != '\n') {
-			++program_counter_;
-		}
-		return true;	
-	}
-
-	return false;
-}
-
-//-----------------------------------------------------------------------------
-// Name: skip_whitespace
-//-----------------------------------------------------------------------------
-void script_engine::skip_whitespace() {
-
-	using std::isspace;
-
-	// skip over white space
-	while(is_valid(program_counter_) && isspace(source_[program_counter_])) {
-		++program_counter_;
-	}
-}
-
-//-----------------------------------------------------------------------------
 // Name: process_token
 //-----------------------------------------------------------------------------
-void script_engine::process_token() {
+template <class In>
+token script_engine::process_token(In &it, In end) {
 
 	using std::isdigit;
 	using std::isalpha;
 
 	// start with an empty token
-	token_ = token(program_counter_);
+	token ret;
 
 	std::string temp_string;
 
 	// eat up all the comments and whitespace
 	// loop cause there may be more than one in a row
 	do {
-		skip_whitespace();
-	} while(skip_comments());
+		skip_whitespace(it, end);
+	} while(skip_comments(it, end));
 
-	if(!is_valid(program_counter_)) {
-		token_ = token(program_counter_, token::FINISHED);
-		return;
+	if(it == end) {
+		ret = token(token::FINISHED);
+		return ret;
 	}
 
-	switch(source_[program_counter_]) {
+	switch(*it) {
 	case '{':
-		program_counter_++;
-		token_ = token(program_counter_, token::LBRACE);
+		++it;
+		ret = token(token::LBRACE);
 		break;
 	case '}':
-		program_counter_++;
-		token_ = token(program_counter_, token::RBRACE);
+		++it;
+		ret = token(token::RBRACE);
 		break;
 	case '[':
-		program_counter_++;
-		token_ = token(program_counter_, token::LBRACKET);
+		++it;
+		ret = token(token::LBRACKET);
 		break;
 	case ']':
-		program_counter_++;
-		token_ = token(program_counter_, token::RBRACKET);
+		++it;
+		ret = token(token::RBRACKET);
 		break;
 	case '.':
-		program_counter_++;
-		token_ = token(program_counter_, token::DOT);
+		++it;
+		ret = token(token::DOT);
 		break;
 	case ';':
-		program_counter_++;
-		token_ = token(program_counter_, token::SEMICOLON);
+		++it;
+		ret = token(token::SEMICOLON);
 		break;
 	case '(':
-		program_counter_++;
-		token_ = token(program_counter_, token::LPAREN);
+		++it;
+		ret = token(token::LPAREN);
 		break;
 	case ')':
-		program_counter_++;
-		token_ = token(program_counter_, token::RPAREN);
+		++it;
+		ret = token(token::RPAREN);
 		break;
 	case ',':
-		program_counter_++;
-		token_ = token(program_counter_, token::COMMA);
+		++it;
+		ret = token(token::COMMA);
 		break;
 	case '~':
-		program_counter_++;
-		token_ = token(program_counter_, token::CMP);
+		++it;
+		ret = token(token::CMP);
 		break;
 
 	case ':':
-		program_counter_++;
-		if(is_valid(program_counter_) && source_[program_counter_] == ':') {
-			program_counter_++;
-			token_ = token(program_counter_, token::DOUBLECOLON);
+		++it;
+		if(it != end && *it == ':') {
+			++it;
+			ret = token(token::DOUBLECOLON);
 		} else {
-			token_ = token(program_counter_, token::COLON);
+			ret = token(token::COLON);
 		}
 		break;
 
 	case '/':
-		program_counter_++;
-		if(is_valid(program_counter_) && source_[program_counter_] == '=') {
-			program_counter_++;
-			token_ = token(program_counter_, token::DIV_EQ);
+		++it;
+		if(it != end && *it == '=') {
+			++it;
+			ret = token(token::DIV_EQ);
 		} else {
-			token_ = token(program_counter_, token::DIV);
+			ret = token(token::DIV);
 		}
 		break;
 	case '^':
-		program_counter_++;
-		if(is_valid(program_counter_) && source_[program_counter_] == '=') {
-			program_counter_++;
-			token_ = token(program_counter_, token::XOR_EQ);
+		++it;
+		if(it != end && *it == '=') {
+			++it;
+			ret = token(token::XOR_EQ);
 		} else {
-			token_ = token(program_counter_, token::XOR);
+			ret = token(token::XOR);
 		}
 		break;
 	case '=':
-		program_counter_++;
-		if(is_valid(program_counter_) && source_[program_counter_] == '=') {
-			program_counter_++;
-			token_ = token(program_counter_, token::EQ);
+		++it;
+		if(it != end && *it == '=') {
+			++it;
+			ret = token(token::EQ);
 		} else {
-			token_ = token(program_counter_, token::ASSIGN);
+			ret = token(token::ASSIGN);
 		}
 		break;
 	case '+':
-		program_counter_++;
-		if(is_valid(program_counter_) && source_[program_counter_] == '=') {
-			program_counter_++;
-			token_ = token(program_counter_, token::PLUS_EQ);
+		++it;
+		if(it != end && *it == '=') {
+			++it;
+			ret = token(token::PLUS_EQ);
 		} else {
-			token_ = token(program_counter_, token::PLUS);
+			ret = token(token::PLUS);
 		}
 		break;
 	case '-':
-		program_counter_++;
-		if(is_valid(program_counter_) && source_[program_counter_] == '=') {
-			program_counter_++;
-			token_ = token(program_counter_, token::MINUS_EQ);
+		++it;
+		if(it != end && *it == '=') {
+			++it;
+			ret = token(token::MINUS_EQ);
 		} else {
-			token_ = token(program_counter_, token::MINUS);
+			ret = token(token::MINUS);
 		}
 		break;
 	case '!':
-		program_counter_++;
-		if(is_valid(program_counter_) && source_[program_counter_] == '=') {
-			program_counter_++;
-			token_ = token(program_counter_, token::NE);
+		++it;
+		if(it != end && *it == '=') {
+			++it;
+			ret = token(token::NE);
 		} else {
-			token_ = token(program_counter_, token::NOT);
+			ret = token(token::NOT);
 		}
 		break;
 	case '*':
-		program_counter_++;
-		if(is_valid(program_counter_) && source_[program_counter_] == '=') {
-			program_counter_++;
-			token_ = token(program_counter_, token::MUL_EQ);
+		++it;
+		if(it != end && *it == '=') {
+			++it;
+			ret = token(token::MUL_EQ);
 		} else {
-			token_ = token(program_counter_, token::MUL);
+			ret = token(token::MUL);
 		}
 		break;
 	case '%':
-		program_counter_++;
-		if(is_valid(program_counter_) && source_[program_counter_] == '=') {
-			program_counter_++;
-			token_ = token(program_counter_, token::MOD_EQ);
+		++it;
+		if(it != end && *it == '=') {
+			++it;
+			ret = token(token::MOD_EQ);
 		} else {
-			token_ = token(program_counter_, token::MOD);
+			ret = token(token::MOD);
 		}
 		break;
 	case '&':
-		program_counter_++;
-		if(is_valid(program_counter_) && source_[program_counter_] == '=') {
-			program_counter_++;
-			token_ = token(program_counter_, token::AND_EQ);
-		} else if(is_valid(program_counter_) && source_[program_counter_] == '&') {
-			program_counter_++;
-			token_ = token(program_counter_, token::LOGICAL_AND);
+		++it;
+		if(it != end && *it == '=') {
+			++it;
+			ret = token(token::AND_EQ);
+		} else if(it != end && *it == '&') {
+			++it;
+			ret = token(token::LOGICAL_AND);
 		} else {
-			token_ = token(program_counter_, token::AND);
+			ret = token(token::AND);
 		}
 		break;
 	case '|':
-		program_counter_++;
-		if(is_valid(program_counter_) && source_[program_counter_] == '=') {
-			program_counter_++;
-			token_ = token(program_counter_, token::OR_EQ);
-		} else if(is_valid(program_counter_) && source_[program_counter_] == '|') {
-			program_counter_++;
-			token_ = token(program_counter_, token::LOGICAL_OR);
+		++it;
+		if(it != end && *it == '=') {
+			++it;
+			ret = token(token::OR_EQ);
+		} else if(it != end && *it == '|') {
+			++it;
+			ret = token(token::LOGICAL_OR);
 		} else {
-			token_ = token(program_counter_, token::OR);
+			ret = token(token::OR);
 		}
 		break;
 
 	case '>':
-		program_counter_++;
-		if(is_valid(program_counter_) && source_[program_counter_] == '>') {
-			program_counter_++;
-			if(is_valid(program_counter_) && source_[program_counter_] == '=') {
-				program_counter_++;
-				token_ = token(program_counter_, token::RSHIFT_EQ);
+		++it;
+		if(it != end && *it == '>') {
+			++it;
+			if(it != end && *it == '=') {
+				++it;
+				ret = token(token::RSHIFT_EQ);
 			} else {
-				token_ = token(program_counter_, token::RSHIFT);
+				ret = token(token::RSHIFT);
 			}
-		} else if(is_valid(program_counter_) && source_[program_counter_] == '=') {
-			program_counter_++;
-			token_ = token(program_counter_, token::GE);
+		} else if(it != end && *it == '=') {
+			++it;
+			ret = token(token::GE);
 		} else {
-			token_ = token(program_counter_, token::GT);
+			ret = token(token::GT);
 		}
 		break;
 
 	case '<':
-		program_counter_++;
-		if(is_valid(program_counter_) && source_[program_counter_] == '<') {
-			program_counter_++;
-			if (is_valid(program_counter_) && source_[program_counter_] == '=') {
-				program_counter_++;
-				token_ = token(program_counter_, token::LSHIFT_EQ);
+		++it;
+		if(it != end && *it == '<') {
+			++it;
+			if (it != end && *it == '=') {
+				++it;
+				ret = token(token::LSHIFT_EQ);
 			} else {
-				token_ = token(program_counter_, token::LSHIFT);
+				ret = token(token::LSHIFT);
 			}
-		} else if(is_valid(program_counter_) && source_[program_counter_] == '=') {
-			program_counter_++;
-			token_ = token(program_counter_, token::LE);
+		} else if(it != end && *it == '=') {
+			++it;
+			ret = token(token::LE);
 		} else {
-			token_ = token(program_counter_, token::LT);
+			ret = token(token::LT);
 		}
 		break;
 
 	// character constant
 	case '\'':
 		// skip past opening quote
-		++program_counter_;
+		++it;
 
-		temp_string = process_char();
+		temp_string = process_char(it, end);
 
 		// the next character better be a single quote
-		if(!is_valid(program_counter_) || source_[program_counter_] != '\'') {
+		if(it == end || *it != '\'') {
 			throw quote_expected();
 		}
 
-		token_ = token(program_counter_, token::CHARACTER, temp_string);
+		ret = token(token::CHARACTER, temp_string);
 
 		// skip past the ending quote
-		++program_counter_;
+		++it;
 		break;
 
 	// quoted string
 	case '"':
 
 		// skip past opening quote
-		++program_counter_;
+		++it;
 
 		// start with empty string
 		temp_string = "";
 
-		while(is_valid(program_counter_) && source_[program_counter_] != '"' && source_[program_counter_] != '\n') {
-			temp_string += process_char();
+		while(it != end && *it != '"' && *it != '\n') {
+			temp_string += process_char(it, end);
 		}
 
-		if(!is_valid(program_counter_)) {
+		if(it == end) {
 			throw unexpected_eof();
 		}
 
 		// make sure we stoped because of an ending quote, not a newline...
-		if(source_[program_counter_] != '"') {
+		if(*it != '"') {
 			throw multiline_string_literal();
 		}
 
-		token_ = token(program_counter_, token::STRING_LITERAL, temp_string);
+		ret = token(token::STRING_LITERAL, temp_string);
 
 		// skip past the ending quote
-		++program_counter_;
+		++it;
 		break;
 
 	default:
-		if(isdigit(source_[program_counter_])) {
+		if(isdigit(*it)) {
 			// number
 			temp_string = "";
 			char ch;
 
-			while(is_valid(program_counter_) && !is_delim((ch = source_[program_counter_]))) {
+			while(it != end && !is_delim((ch = *it))) {
 				temp_string += ch;
-				++program_counter_;
+				++it;
 			}
 
-			if(!is_valid(program_counter_)) {
+			if(it == end) {
 				throw unexpected_eof();
 			}
 
-			token_ = token(program_counter_, token::INTEGER, temp_string);
+			ret = token(token::INTEGER, temp_string);
 
-		} else if(isalpha(source_[program_counter_])) {
+		} else if(isalpha(*it)) {
 			// var or command
 			temp_string = "";
 			char ch;
 
-			while(is_valid(program_counter_) && !is_delim((ch = source_[program_counter_]))) {
+			while(it != end && !is_delim((ch = *it))) {
 				temp_string += ch;
-				++program_counter_;
+				++it;
 			}
 
-			if(!is_valid(program_counter_)) {
+			if(it == end) {
 				throw unexpected_eof();
 			}
 
 			// is a keyword or an identifier
 			if(is_keyword(temp_string)) {
-				token_ = token(program_counter_, get_keyword(temp_string), temp_string);
+				ret = token(get_keyword(temp_string), temp_string);
 			} else {
-				token_ = token(program_counter_, token::IDENTIFIER, temp_string);
+				ret = token(token::IDENTIFIER, temp_string);
 			}
 		} else {
 			throw syntax_error();
 		}
 	}
-
-}
-
-//-----------------------------------------------------------------------------
-// Name: process_char
-// Desc: processes a character constant (assumes is either in a string or a
-//       quoted char constant)
-//-----------------------------------------------------------------------------
-char script_engine::process_char() {
-
-	using std::isxdigit;
-
-	if(!is_valid(program_counter_)) {
-		return '\0';
-	}
-
-	char temp_char;
-
-	// is it an escape sequence?
-	if(source_[program_counter_] == '\\') {
-
-		std::string temp_string;
-
-		// skip past escape char
-		++program_counter_;
-
-		if(!is_valid(program_counter_)) {
-			throw unexpected_eof();
-		}
-
-		// which special sequence is it?
-		switch(source_[program_counter_]) {
-		case '\'': temp_char = '\''; break;
-		case '\"': temp_char = '\"'; break;
-		case '\\': temp_char = '\\'; break;
-		case '0':  temp_char = '\0'; break;
-		case 'a':  temp_char = '\a'; break;
-		case 'b':  temp_char = '\b'; break;
-		case 'f':  temp_char = '\f'; break;
-		case 'n':  temp_char = '\n'; break;
-		case 'r':  temp_char = '\r'; break;
-		case 't':  temp_char = '\t'; break;
-		case 'v':  temp_char = '\v'; break;
-		case 'x':
-			++program_counter_;
-			while(is_valid(program_counter_) && isxdigit(source_[program_counter_])) {
-				temp_string += source_[program_counter_];
-				++program_counter_;
-			}
-
-			if(!is_valid(program_counter_)) {
-				throw unexpected_eof();
-			}
-
-			temp_char = static_cast<char>(stoi(temp_string, nullptr, 16));
-			--program_counter_;
-			break;
-		default:
-			while(is_valid(program_counter_) && is_odigit(source_[program_counter_])) {
-				temp_string += source_[program_counter_];
-				++program_counter_;
-			}
-
-			if(!is_valid(program_counter_)) {
-				throw unexpected_eof();
-			}
-
-			temp_char = static_cast<char>(stoi(temp_string, nullptr, 8));
-			--program_counter_;
-			break;
-		}
-
-	} else {
-		temp_char = source_[program_counter_];
-	}
-
-	++program_counter_;
-
-	return temp_char;
+	
+	return ret;
 }
 
 //-----------------------------------------------------------------------------

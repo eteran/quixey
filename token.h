@@ -93,15 +93,13 @@ public:
 	};
 public:
 
-	token(address_t offset, Type token, const std::string &string);
-	token(address_t offset, Type token);
-	explicit token(address_t offset);
+	token(Type token, const std::string &string);
+	token(Type token);
 	token();
 	token(const token &other);
 	token &operator=(const token &rhs);
 
 public:
-	address_t offset() const { return offset_; }
 	Type type() const        { return token_type_; }
 	Type type_class() const  { return static_cast<Type>(token_type_ & 0xf000); }
 
@@ -109,7 +107,6 @@ public:
 private:
 	std::string string_;
 	Type        token_type_;
-	address_t   offset_;
 
 private:
 	friend std::string to_string(const token &t);

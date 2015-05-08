@@ -2,26 +2,22 @@
 #include "token.h"
 #include "error.h"
 
-token::token(address_t offset, Type type, const std::string &string) : string_(string), token_type_(type), offset_(offset) {
+token::token(Type type, const std::string &string) : string_(string), token_type_(type) {
 }
 
-token::token(address_t offset, Type type) : token(offset, type, "") {
+token::token(Type type) : token(type, "") {
 }
 
-token::token(address_t offset) : token(offset, UNKNOWN) {
-}
-
-token::token() : token_type_(UNKNOWN), offset_(0) {
+token::token() : token_type_(UNKNOWN) {
 }
 
 token &token::operator=(const token &rhs) {
 	string_     = rhs.string_;
 	token_type_ = rhs.token_type_;
-	offset_     = rhs.offset_;
 	return *this;
 }
 
-token::token(const token &other) : string_(other.string_), token_type_(other.token_type_), offset_(other.offset_) {
+token::token(const token &other) : string_(other.string_), token_type_(other.token_type_) {
 }
 
 std::string to_string(const token &t) {
