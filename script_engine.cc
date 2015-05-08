@@ -1508,13 +1508,10 @@ token &script_engine::peek_token() {
 // Name: process_token
 //-----------------------------------------------------------------------------
 template <class In>
-token script_engine::process_token(In &it, In end) {
+token script_engine::process_token(In &it, In end) const {
 
 	using std::isdigit;
 	using std::isalpha;
-
-	// start with an empty token
-	token ret;
 
 	std::string temp_string;
 
@@ -1525,194 +1522,167 @@ token script_engine::process_token(In &it, In end) {
 	} while(skip_comments(it, end));
 
 	if(it == end) {
-		ret = token(token::FINISHED);
-		return ret;
+		return token(token::FINISHED);
 	}
 
 	switch(*it) {
 	case '{':
 		++it;
-		ret = token(token::LBRACE);
-		break;
+		return token(token::LBRACE);
 	case '}':
 		++it;
-		ret = token(token::RBRACE);
-		break;
+		return token(token::RBRACE);
 	case '[':
 		++it;
-		ret = token(token::LBRACKET);
-		break;
+		return token(token::LBRACKET);
 	case ']':
 		++it;
-		ret = token(token::RBRACKET);
-		break;
+		return token(token::RBRACKET);
 	case '.':
 		++it;
-		ret = token(token::DOT);
-		break;
+		return token(token::DOT);
 	case ';':
 		++it;
-		ret = token(token::SEMICOLON);
-		break;
+		return token(token::SEMICOLON);
 	case '(':
 		++it;
-		ret = token(token::LPAREN);
-		break;
+		return token(token::LPAREN);
 	case ')':
 		++it;
-		ret = token(token::RPAREN);
-		break;
+		return token(token::RPAREN);
 	case ',':
 		++it;
-		ret = token(token::COMMA);
-		break;
+		return token(token::COMMA);
 	case '~':
 		++it;
-		ret = token(token::CMP);
-		break;
+		return token(token::CMP);
 
 	case ':':
 		++it;
 		if(it != end && *it == ':') {
 			++it;
-			ret = token(token::DOUBLECOLON);
+			return token(token::DOUBLECOLON);
 		} else {
-			ret = token(token::COLON);
+			return token(token::COLON);
 		}
-		break;
-
 	case '/':
 		++it;
 		if(it != end && *it == '=') {
 			++it;
-			ret = token(token::DIV_EQ);
+			return token(token::DIV_EQ);
 		} else {
-			ret = token(token::DIV);
+			return token(token::DIV);
 		}
-		break;
 	case '^':
 		++it;
 		if(it != end && *it == '=') {
 			++it;
-			ret = token(token::XOR_EQ);
+			return token(token::XOR_EQ);
 		} else {
-			ret = token(token::XOR);
+			return token(token::XOR);
 		}
-		break;
 	case '=':
 		++it;
 		if(it != end && *it == '=') {
 			++it;
-			ret = token(token::EQ);
+			return token(token::EQ);
 		} else {
-			ret = token(token::ASSIGN);
+			return token(token::ASSIGN);
 		}
-		break;
 	case '+':
 		++it;
 		if(it != end && *it == '=') {
 			++it;
-			ret = token(token::PLUS_EQ);
+			return token(token::PLUS_EQ);
 		} else {
-			ret = token(token::PLUS);
+			return token(token::PLUS);
 		}
-		break;
 	case '-':
 		++it;
 		if(it != end && *it == '=') {
 			++it;
-			ret = token(token::MINUS_EQ);
+			return token(token::MINUS_EQ);
 		} else {
-			ret = token(token::MINUS);
+			return token(token::MINUS);
 		}
-		break;
 	case '!':
 		++it;
 		if(it != end && *it == '=') {
 			++it;
-			ret = token(token::NE);
+			return token(token::NE);
 		} else {
-			ret = token(token::NOT);
+			return token(token::NOT);
 		}
-		break;
 	case '*':
 		++it;
 		if(it != end && *it == '=') {
 			++it;
-			ret = token(token::MUL_EQ);
+			return token(token::MUL_EQ);
 		} else {
-			ret = token(token::MUL);
+			return token(token::MUL);
 		}
-		break;
 	case '%':
 		++it;
 		if(it != end && *it == '=') {
 			++it;
-			ret = token(token::MOD_EQ);
+			return token(token::MOD_EQ);
 		} else {
-			ret = token(token::MOD);
+			return token(token::MOD);
 		}
-		break;
 	case '&':
 		++it;
 		if(it != end && *it == '=') {
 			++it;
-			ret = token(token::AND_EQ);
+			return token(token::AND_EQ);
 		} else if(it != end && *it == '&') {
 			++it;
-			ret = token(token::LOGICAL_AND);
+			return token(token::LOGICAL_AND);
 		} else {
-			ret = token(token::AND);
+			return token(token::AND);
 		}
-		break;
 	case '|':
 		++it;
 		if(it != end && *it == '=') {
 			++it;
-			ret = token(token::OR_EQ);
+			return token(token::OR_EQ);
 		} else if(it != end && *it == '|') {
 			++it;
-			ret = token(token::LOGICAL_OR);
+			return token(token::LOGICAL_OR);
 		} else {
-			ret = token(token::OR);
+			return token(token::OR);
 		}
-		break;
-
 	case '>':
 		++it;
 		if(it != end && *it == '>') {
 			++it;
 			if(it != end && *it == '=') {
 				++it;
-				ret = token(token::RSHIFT_EQ);
+				return token(token::RSHIFT_EQ);
 			} else {
-				ret = token(token::RSHIFT);
+				return token(token::RSHIFT);
 			}
 		} else if(it != end && *it == '=') {
 			++it;
-			ret = token(token::GE);
+			return token(token::GE);
 		} else {
-			ret = token(token::GT);
+			return token(token::GT);
 		}
-		break;
-
 	case '<':
 		++it;
 		if(it != end && *it == '<') {
 			++it;
 			if (it != end && *it == '=') {
 				++it;
-				ret = token(token::LSHIFT_EQ);
+				return token(token::LSHIFT_EQ);
 			} else {
-				ret = token(token::LSHIFT);
+				return token(token::LSHIFT);
 			}
 		} else if(it != end && *it == '=') {
 			++it;
-			ret = token(token::LE);
+			return token(token::LE);
 		} else {
-			ret = token(token::LT);
+			return token(token::LT);
 		}
-		break;
 
 	// character constant
 	case '\'':
@@ -1726,11 +1696,10 @@ token script_engine::process_token(In &it, In end) {
 			throw quote_expected();
 		}
 
-		ret = token(token::CHARACTER, temp_string);
-
 		// skip past the ending quote
 		++it;
-		break;
+
+		return token(token::CHARACTER, temp_string);
 
 	// quoted string
 	case '"':
@@ -1754,11 +1723,10 @@ token script_engine::process_token(In &it, In end) {
 			throw multiline_string_literal();
 		}
 
-		ret = token(token::STRING_LITERAL, temp_string);
-
 		// skip past the ending quote
 		++it;
-		break;
+
+		return token(token::STRING_LITERAL, temp_string);
 
 	default:
 		if(isdigit(*it)) {
@@ -1775,7 +1743,7 @@ token script_engine::process_token(In &it, In end) {
 				throw unexpected_eof();
 			}
 
-			ret = token(token::INTEGER, temp_string);
+			return token(token::INTEGER, temp_string);
 
 		} else if(isalpha(*it)) {
 			// var or command
@@ -1793,16 +1761,14 @@ token script_engine::process_token(In &it, In end) {
 
 			// is a keyword or an identifier
 			if(is_keyword(temp_string)) {
-				ret = token(get_keyword(temp_string), temp_string);
+				return token(get_keyword(temp_string), temp_string);
 			} else {
-				ret = token(token::IDENTIFIER, temp_string);
-			}
-		} else {
-			throw syntax_error();
+				return token(token::IDENTIFIER, temp_string);
+			}		
 		}
 	}
 	
-	return ret;
+	throw syntax_error();
 }
 
 //-----------------------------------------------------------------------------
