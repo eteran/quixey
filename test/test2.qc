@@ -7,7 +7,7 @@ string hello(auto x) {
 int f(auto x) {
 
 	if(is_string(x)) {
-		foreach(auto ch : x) {
+		for(auto ch : x) {
 			printf("%c", ch);
 		}
 		printf("\n");

@@ -91,7 +91,8 @@ private:
 	const function &get_function(const std::string &name) const;
 	int exec_do();
 	int exec_for();
-	int exec_foreach();
+	int exec_for_body();
+	int exec_foreach_body(variable &it);
 	int exec_if();
 	int exec_return();
 	int exec_while();
@@ -107,8 +108,8 @@ private:
 	variable array_literal();
 	void create_scope();
 	void declare_function(const std::string &name, int return_type, int &brace);
-	void declare_global();
-	void declare_local();
+	variable &declare_global();
+	variable &declare_local();
 	void destroy_scope();
 	void find_eob();
 	void get_parameter_metadata(const std::vector<variable> &arguments, std::vector<std::string> &names);
@@ -120,9 +121,7 @@ private:
 	void skip_whitespace();
 
 	template <class F>
-	void declare_variable(F func);
-
-	variable &declare_local_foreach();
+	variable &declare_variable(F func);
 
 public:
 	unsigned int line_number(address_t offset) const;

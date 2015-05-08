@@ -193,7 +193,7 @@ int sum(int num) {
 // Name: print_alpha
 //-----------------------------------------------------------------------------
 int print_alpha() {
-	foreach(auto ch : "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
+	for(auto ch : "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
 		putchar(ch);
 	}
 	

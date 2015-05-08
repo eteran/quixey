@@ -4,7 +4,7 @@ auto dump_array(auto a) {
 
 	if(is_array(a)) {
 		printf("Array(\n");
-		foreach(auto e : a) {
+		for(auto e : a) {
 			if(is_integer(e)) {
 				printf("I: %d\n", e);
 			}

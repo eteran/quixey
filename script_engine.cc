@@ -44,9 +44,9 @@ int call_puts(std::string s) {
 }
 
 //-----------------------------------------------------------------------------
-// Name: call_getche
+// Name: call_getch
 //-----------------------------------------------------------------------------
-int call_getche() {
+int call_getch() {
 	char ch;
 	std::cin >> ch;
 	return ch;
@@ -234,7 +234,6 @@ script_engine::script_engine() : block_depth_(0), prescan_(false) {
 	keywords_.emplace("do",       token::DO);
 	keywords_.emplace("else",     token::ELSE);
 	keywords_.emplace("for",      token::FOR);
-	keywords_.emplace("foreach",  token::FOREACH);
 	keywords_.emplace("if",       token::IF);
 	keywords_.emplace("int",      token::INT);
 	keywords_.emplace("auto",     token::AUTO);
@@ -251,7 +250,7 @@ script_engine::script_engine() : block_depth_(0), prescan_(false) {
 	types_.insert("auto");
 
 	// setup built in functions
-	register_function("getche",       call_getche);
+	register_function("getch",        call_getch);
 	register_function("getnum",       call_getnum);
 	register_function("is_array",     call_is_array);
 	register_function("is_character", call_is_character);
@@ -439,6 +438,7 @@ void script_engine::prescan() {
 					// return to start of declaration
 					program_counter_ = typename_location;
 					declare_global();
+					test_token<semicolon_expected>(token::SEMICOLON);
 				} else {
 					// must be a function
 					declare_function(identifier_name, data_type, brace);
@@ -570,57 +570,11 @@ int script_engine::exec_return() {
 }
 
 //-----------------------------------------------------------------------------
-// Name: declare_local_foreach
-//-----------------------------------------------------------------------------
-variable &script_engine::declare_local_foreach() {
-	// get type
-	get_token();
-
-	// save var type
-	// TODO: make it get this from a general type system
-	const token::Type var_type = token_.type();
-
-	if(!is_type(token_)) {
-		throw type_expected();
-	}
-
-	variable var_value;
-
-	// force the variable to be a specific type
-	switch(var_type) {
-	case token::STRING:
-		var_value = variable::create_string();
-		break;
-	case token::INT:
-		var_value = variable::create_integer();
-		break;
-	case token::CHAR:
-		var_value = variable::create_character();
-		break;
-	case token::AUTO:
-		// generic!
-		break;
-	default:
-		throw type_expected();
-	}
-
-	// get var name
-	get_token();
-
-	auto var_name = to_string(token_);
-
-	// push it on the stack of variables
-	push_local(var_value, var_name);
-
-	return get_variable(var_name);
-}
-
-//-----------------------------------------------------------------------------
 // Name: declare_variable
 // Desc: common variable declaration code
 //-----------------------------------------------------------------------------
 template <class F>
-void script_engine::declare_variable(F func) {
+variable &script_engine::declare_variable(F func) {
 	// get type
 	get_token();
 
@@ -631,6 +585,8 @@ void script_engine::declare_variable(F func) {
 	if(!is_type(token_)) {
 		throw type_expected();
 	}
+	
+	std::string last_variable;
 
 	// process comma-separated list
 	do {
@@ -638,6 +594,7 @@ void script_engine::declare_variable(F func) {
 		get_token();
 
 		auto var_name = to_string(token_);
+		last_variable = var_name;
 		
 		if(is_keyword(var_name)) {
 			throw variable_name_is_keyword();
@@ -687,15 +644,15 @@ void script_engine::declare_variable(F func) {
 		func(var, var_name);
 
 	} while(token_.type() == token::COMMA);
-
-	test_token<semicolon_expected>(token::SEMICOLON);
+	
+	return get_variable(last_variable);
 }
 
 //-----------------------------------------------------------------------------
 // Name: declare_local
 //-----------------------------------------------------------------------------
-void script_engine::declare_local() {
-	declare_variable([this](const variable &v, const std::string &name) {
+variable &script_engine::declare_local() {
+	return declare_variable([this](const variable &v, const std::string &name) {
 		push_local(v, name);
 	});	
 }
@@ -703,10 +660,10 @@ void script_engine::declare_local() {
 //-----------------------------------------------------------------------------
 // Name: declare_global
 //-----------------------------------------------------------------------------
-void script_engine::declare_global() {
-	declare_variable([this](const variable &v, const std::string &name) {
+variable &script_engine::declare_global() {
+	return declare_variable([this](const variable &v, const std::string &name) {
 		push_global(v, name);
-	});	
+	});
 }
 
 //-----------------------------------------------------------------------------
@@ -758,6 +715,7 @@ int script_engine::interpret_block() {
 			// declare local variables
 			put_back();
 			declare_local();
+			test_token<semicolon_expected>(token::SEMICOLON);
 		} else {
 
 			switch(token_.type()) {
@@ -826,18 +784,6 @@ int script_engine::interpret_block() {
 
 			case token::FOR: // process a for loop
 				if(exec_for()) {
-					do {
-						get_token();
-						if(token_.type() == token::LBRACE)      { ++block_depth_; create_scope(); }
-						else if(token_.type() == token::RBRACE) { --block_depth_; destroy_scope(); }
-					} while(block_start != block_depth_);
-					return 1;
-
-				}
-				break;
-
-			case token::FOREACH:
-				if(exec_foreach()) {
 					do {
 						get_token();
 						if(token_.type() == token::LBRACE)      { ++block_depth_; create_scope(); }
@@ -1280,19 +1226,12 @@ void script_engine::find_eob() {
 	} while(brace);
 }
 
+
 //-----------------------------------------------------------------------------
-// Name: exec_foreach
+// Name: 
 //-----------------------------------------------------------------------------
-int script_engine::exec_foreach() {
-
-	create_scope();
-
-	// eat up the leading (
-	get_token();
-	test_token<paren_expected>(token::LPAREN);
-
-	variable &it = declare_local_foreach();
-
+int script_engine::exec_foreach_body(variable &it) {
+	
 	get_token();
 	test_token<colon_expected>(token::COLON);
 
@@ -1321,25 +1260,9 @@ int script_engine::exec_foreach() {
 }
 
 //-----------------------------------------------------------------------------
-// Name: exec_for
+// Name: 
 //-----------------------------------------------------------------------------
-int script_engine::exec_for() {
-
-	create_scope();
-
-	// eat up the leading (
-	get_token();
-	test_token<paren_expected>(token::LPAREN);
-
-	// initialization expression
-	if(is_type(peek_token())) {
-		declare_local();
-		put_back();
-	} else {
-		variable init_expression;
-		eval_exp(init_expression);
-	}
-
+int script_engine::exec_for_body() {
 	// should be followed by a semicolon
 	test_token<semicolon_expected>(token::SEMICOLON);
 
@@ -1387,6 +1310,33 @@ int script_engine::exec_for() {
 
 	destroy_scope();
 	return 0;
+}
+
+//-----------------------------------------------------------------------------
+// Name: exec_for
+//-----------------------------------------------------------------------------
+int script_engine::exec_for() {
+
+	create_scope();
+
+	// eat up the leading (
+	get_token();
+	test_token<paren_expected>(token::LPAREN);
+
+	// initialization expression
+	if(is_type(peek_token())) {
+		variable &var = declare_local();
+		if(current_token().type() == token::COLON) {
+			put_back();
+			return exec_foreach_body(var);
+		}
+		put_back();
+	} else {
+		variable init_expression;
+		eval_exp(init_expression);
+	}
+	
+	return exec_for_body();
 }
 
 //-----------------------------------------------------------------------------

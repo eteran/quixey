@@ -136,13 +136,12 @@ languages. **The following is not allowed in quixey**.
 **Note**: you may declare a variable in the initialization part of the
           for loop, this variable only exists inside the loop. Just like in C++.
 
+**Note**: the for each style syntax requires that you declare a variable as the
+          initializer.
+
 	for(i = 0; i < 10; i += 1) { }
 	for(int i = 0; i < 10; i += 1) { }
-
-`foreach`:
-
-
-	foreach(auto e : a) {}
+	for(auto e : a) {}
 
 `do`:
 
@@ -191,7 +190,7 @@ lambdas also, always have the return type of `auto`.
 ## Built-in Functions
 * `int size(auto x); // returns the length of an array or string`
 * `int puts(string s); // just like C's puts`
-* `int getche(); // gets 1 character from stdin`
+* `int getch(); // gets 1 character from stdin`
 * `int getnum(); // gets an integer from stdin`
 * `int putchar(char ch); // puts a character to stdout`
 * `int is_integer(auto x); // returns non-zero if the parameter is an integer`
