@@ -1,5 +1,11 @@
 #!/usr/bin/quixey
 
+/*
+ * this is a multi-line C-style comment
+ */
+ 
+# this is a shell style comment
+
 int i, j, k;
 int ret = 5, l = 1 | 2;
 int G = ret + 10; // globals can reference previously declared globals!

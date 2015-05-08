@@ -73,10 +73,11 @@ public:
 	void reset();
 	void prescan();
 	void tokenize(std::vector<char>::const_iterator first, std::vector<char>::const_iterator last);
-	bool load_program(const std::string &name);
+	bool load_program(const std::string &name);	
 	int start(const std::string &function);
 
 private:
+	bool import_code(const std::string &name);
 	address_t pop_function();
 	bool is_keyword(const std::string &s) const;
 	bool is_type(const std::string &s) const;

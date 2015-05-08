@@ -590,32 +590,43 @@ void script_engine::prescan() {
 	prescan_ = false;
 }
 
-
 //-----------------------------------------------------------------------------
-// Name: load_preprocessed_file
+// Name: import_code
 //-----------------------------------------------------------------------------
-std::vector<char> script_engine::load_preprocessed_file(const std::string &name) {
+bool script_engine::import_code(const std::string &name) {
+	// the idea here is that imports_.top() will represent the file currently being imported
+	imports_.push(name);
 
-	std::vector<char> ret;
+	std::vector<char> source;
 	std::ifstream file(name);
-	if(file) {
-		ret = std::vector<char>(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+	
+	for(std::string line; std::getline(file, line); ) {
+	
+		std::string temp = ltrim_copy(line);
+		if(starts_with(temp, "@import")) {
+			// we are looking at an import statement!
+		}
+		
+		
+		
+	
+		source.insert(source.end(), line.begin(), line.end());
+		source.push_back('\n');
 	}
 	
-	return ret;
+	tokenize(source.begin(), source.end());
+	
+	imports_.pop();
+	return false;
 }
+
 
 //-----------------------------------------------------------------------------
 // Name: load_program
 //-----------------------------------------------------------------------------
 bool script_engine::load_program(const std::string &name) {
-	// the idea here is that imports_.top() will represent the file currently being imported
-	imports_.push(name);
-	
-	const std::vector<char> source = load_preprocessed_file(name);
-	tokenize(source.begin(), source.end());
-	
-	imports_.pop();
+
+	import_code(name);
 	prescan();
 	return false;
 }
