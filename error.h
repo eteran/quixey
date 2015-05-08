@@ -10,6 +10,7 @@ struct error : std::exception {
 	}
 	
 	int line_number = -1;
+	std::string filename;
 };
 
 #include "syntax_error.h"

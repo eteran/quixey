@@ -437,6 +437,7 @@ void script_engine::tokenize(std::vector<char>::const_iterator first, std::vecto
 		} while(token_.type() != token::FINISHED);
 	} catch(error &e) {	
 		e.line_number = std::count(first, it, '\n') + 1;
+		e.filename = imports_.top();
 		throw;
 	}
 }
@@ -588,16 +589,13 @@ std::vector<char> script_engine::load_preprocessed_file(const std::string &name)
 	// (most noteably includes which account for line number
 	// adjustments)
 
-	// the idea here is that imports_.top() will represent the file currently being imported
-	imports_.push(name);
-
 	std::vector<char> ret;
 	std::ifstream file(name.c_str());
 	if(file) {
 		ret = std::vector<char>(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 	}
 	
-	imports_.pop();
+	
 	return ret;
 }
 
@@ -605,8 +603,13 @@ std::vector<char> script_engine::load_preprocessed_file(const std::string &name)
 // Name: load_program
 //-----------------------------------------------------------------------------
 bool script_engine::load_program(const std::string &name) {
-	std::vector<char> source = load_preprocessed_file(name);
+	// the idea here is that imports_.top() will represent the file currently being imported
+	imports_.push(name);
+	
+	const std::vector<char> source = load_preprocessed_file(name);
 	tokenize(source.begin(), source.end());
+	
+	imports_.pop();
 	prescan();
 	return false;
 }

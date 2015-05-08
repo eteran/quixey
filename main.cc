@@ -27,6 +27,7 @@ int main(int argc, char *argv[]) {
 		std::cerr << "An Error Occurred: " << e.what() << std::endl;
 		if(e.line_number >= 0) {
 		std::cerr << "On Line Number: " << e.line_number << std::endl;
+		std::cerr << "In File: " << e.filename << std::endl;
 		}
 		std::cerr << "-------------------------------" << std::endl;
 	}
