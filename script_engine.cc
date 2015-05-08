@@ -624,7 +624,8 @@ void script_engine::import_code(std::string name) {
 	
 	for(std::string line; std::getline(file, line); ) {
 	
-		
+		// TODO(eteran): this isn't the most efficient implementation
+		//               let's think about ways to do less substring operations
 		std::string temp = ltrim_copy(line);
 		if(starts_with(temp, "@import")) {
 			// we are looking at an import statement!
