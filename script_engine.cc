@@ -432,7 +432,19 @@ void script_engine::tokenize(std::vector<char>::const_iterator first, std::vecto
 	auto it = first;
 	try {		
 		do {
-			token_ = process_token(it, last);
+		
+			// eat up leading whitespace
+			skip_whitespace(it, last);
+			
+			// TODO(eteran): perform import here?
+
+			// eat up all the comments and whitespace
+			// loop cause there may be more than one in a row			
+			while(skip_comments(it, last)) {
+				skip_whitespace(it, last);
+			}
+
+			token_ = process_token(first, it, last);
 			program_.push_back(token_);
 		} while(token_.type() != token::FINISHED);
 	} catch(error &e) {	
@@ -584,17 +596,11 @@ void script_engine::prescan() {
 //-----------------------------------------------------------------------------
 std::vector<char> script_engine::load_preprocessed_file(const std::string &name) {
 
-	// TODO: implement some level of a pre-processor
-	// and have the interpreter understand it
-	// (most noteably includes which account for line number
-	// adjustments)
-
 	std::vector<char> ret;
-	std::ifstream file(name.c_str());
+	std::ifstream file(name);
 	if(file) {
 		ret = std::vector<char>(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 	}
-	
 	
 	return ret;
 }
@@ -1519,23 +1525,19 @@ token &script_engine::peek_token() {
 // Name: process_token
 //-----------------------------------------------------------------------------
 template <class In>
-token script_engine::process_token(In &it, In end) const {
+token script_engine::process_token(In first, In &it, In end) const {
+
+	(void)first;
 
 	using std::isdigit;
 	using std::isalpha;
 
 	std::string temp_string;
 
-	// eat up all the comments and whitespace
-	// loop cause there may be more than one in a row
-	do {
-		skip_whitespace(it, end);
-	} while(skip_comments(it, end));
-
 	if(it == end) {
 		return token(token::FINISHED);
 	}
-
+	
 	switch(*it) {
 	case '{':
 		++it;

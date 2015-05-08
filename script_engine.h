@@ -120,7 +120,7 @@ private:
 	variable &declare_variable(F func);
 	
 	template <class In>
-	token process_token(In &it, In end) const;
+	token process_token(In first, In &it, In end) const;
 
 public:
 	const token &current_token() const { return token_; }
