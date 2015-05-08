@@ -196,29 +196,6 @@ int call_printf(script_engine *engine) {
 }
 
 
-//-----------------------------------------------------------------------------
-// Name: load_preprocessed_file
-//-----------------------------------------------------------------------------
-std::string load_preprocessed_file(const std::string &name) {
-
-	// TODO: implement some level of a pre-processor
-	// and have the interpreter understand it
-	// (most noteably includes which account for line number
-	// adjustments)
-
-	std::string ret;
-	std::ifstream file(name.c_str());
-	if(file) {
-		ret = std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
-		std::istringstream ss(ret);
-		std::string first_line;
-		std::getline(ss, first_line);
-		if(first_line[0] == '#') {
-			ret = ret.substr(ret.find('\n') + 1);
-		}
-	}
-	return ret;
-}
 }
 
 //-----------------------------------------------------------------------------
@@ -264,6 +241,7 @@ script_engine::script_engine() : block_depth_(0), prescan_(false) {
 	
 	reset();
 }
+
 
 //-----------------------------------------------------------------------------
 // Name: line_number
@@ -456,12 +434,37 @@ void script_engine::prescan() {
 	prescan_ = false;
 }
 
+
+//-----------------------------------------------------------------------------
+// Name: load_preprocessed_file
+//-----------------------------------------------------------------------------
+std::vector<char> script_engine::load_preprocessed_file(const std::string &name) {
+
+	// TODO: implement some level of a pre-processor
+	// and have the interpreter understand it
+	// (most noteably includes which account for line number
+	// adjustments)
+
+	// the idea here is that imports_.top() will represent the file currently being imported
+	imports_.push(name);
+
+	std::vector<char> ret;
+	std::ifstream file(name.c_str());
+	if(file) {
+		ret = std::vector<char>(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+	}
+	
+	
+	imports_.pop();
+	return ret;
+}
+
 //-----------------------------------------------------------------------------
 // Name: load_program
 //-----------------------------------------------------------------------------
 bool script_engine::load_program(const std::string &name) {
-	const std::string program = load_preprocessed_file(name);
-	source_ = std::vector<char>(program.begin(), program.end());
+	source_ = load_preprocessed_file(name);
+	tokenize();
 	return false;
 }
 
@@ -1417,6 +1420,14 @@ bool script_engine::skip_comments() {
 		} else {
 			program_counter_ = original_pc;
 		}
+	} else if(source_[program_counter_] == '#') {
+		++program_counter_;
+
+		// shell style comments
+		while(is_valid(program_counter_) && source_[program_counter_] != '\n') {
+			++program_counter_;
+		}
+		return true;	
 	}
 
 	return false;

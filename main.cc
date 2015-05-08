@@ -20,7 +20,6 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 	
-	scripter.tokenize();
 	scripter.prescan();
 	return scripter.start("main");
 }

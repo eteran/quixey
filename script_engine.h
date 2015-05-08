@@ -61,12 +61,13 @@ private:
 
 private:
 	// cleared on reset
-	globals_t            global_variables_;
-	functions_t          functions_;
-	address_t            program_counter_;
-	std::stack<locals_t> function_variables_;
-	int                  block_depth_;
-	bool                 prescan_;
+	globals_t               global_variables_;
+	functions_t             functions_;
+	address_t               program_counter_;
+	std::stack<locals_t>    function_variables_;
+	int                     block_depth_;
+	bool                    prescan_;
+	std::stack<std::string> imports_;
 
 public:
 	token &get_token();
@@ -119,6 +120,7 @@ private:
 	void push_local(const variable &v, const std::string &name);
 	void put_back();
 	void skip_whitespace();
+	std::vector<char> load_preprocessed_file(const std::string &name);
 
 	template <class F>
 	variable &declare_variable(F func);
