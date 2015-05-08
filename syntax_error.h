@@ -4,6 +4,12 @@
 
 #include "error.h"
 
+struct unable_to_read_file : error {
+	virtual const char *what() const throw() {
+		return "unable_to_read_file";
+	}
+};
+
 struct syntax_error : error {
 	virtual const char *what() const throw() {
 		return "syntax_error";

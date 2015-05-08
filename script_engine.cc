@@ -448,8 +448,10 @@ void script_engine::tokenize(std::vector<char>::const_iterator first, std::vecto
 			program_.push_back(token_);
 		}
 	} catch(error &e) {	
-		e.line_number = std::count(first, it, '\n') + 1;
-		e.filename = imports_.top();
+		if(e.line_number == -1) {
+			e.line_number = std::count(first, it, '\n') + 1;
+			e.filename = imports_.top();
+		}
 		throw;
 	}
 }
@@ -593,12 +595,32 @@ void script_engine::prescan() {
 //-----------------------------------------------------------------------------
 // Name: import_code
 //-----------------------------------------------------------------------------
-void script_engine::import_code(const std::string &name) {
+void script_engine::import_code(std::string name) {
+	
+	std::string parent_import;
+	std::string import_path;
+	
+	if(!imports_.empty()) {
+		parent_import = imports_.top();
+		size_t n = parent_import.find_last_of('/');
+		if(n != std::string::npos) {
+			import_path = parent_import.substr(0, n + 1);
+		} else {
+			import_path = "./";
+		}
+	}
+	
+	name = import_path + name;
+	
 	// the idea here is that imports_.top() will represent the file currently being imported
 	imports_.push(name);
-	
+
 	std::vector<char> source;
 	std::ifstream file(name);
+	
+	if(!file) {
+		throw unable_to_read_file();
+	}
 	
 	for(std::string line; std::getline(file, line); ) {
 	
@@ -618,8 +640,8 @@ void script_engine::import_code(const std::string &name) {
 			//               or relative to the source file importing it
 			//               not relative to the quixey CWD
 			import_name = import_name.substr(1, import_name.size() - 2);
-			
-			import_code(import_name);
+
+			import_code(import_path + import_name);
 			
 			source.push_back('\n');
 			continue;
