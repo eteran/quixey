@@ -635,10 +635,7 @@ void script_engine::import_code(std::string name) {
 			if(!starts_with(import_name, '"') || !ends_with(import_name, '"')) {
 				throw syntax_error();
 			}
-			
-			// TODO(eteran): force that this name is either absolute
-			//               or relative to the source file importing it
-			//               not relative to the quixey CWD
+
 			import_name = import_name.substr(1, import_name.size() - 2);
 
 			import_code(import_path + import_name);
@@ -657,17 +654,31 @@ void script_engine::import_code(std::string name) {
 	
 }
 
+//-----------------------------------------------------------------------------
+// Name: dump_tokens
+//-----------------------------------------------------------------------------
+void script_engine::dump_tokens() {
+	std::cout << "--------------------\n";
+	for(auto token : program_) {
+		std::cout << "\t" << token << "\n";
+	}
+	std::cout << "--------------------\n";
+}
 
 //-----------------------------------------------------------------------------
 // Name: load_program
 //-----------------------------------------------------------------------------
-bool script_engine::load_program(const std::string &name) {
+void script_engine::load_program(const std::string &name) {
 
 	import_code(name);
 	// make sure that the program has a terminator
-	program_.push_back(token::FINISHED);	
+	program_.push_back(token::FINISHED);
+	
+#if 0
+	dump_tokens();
+#endif
+
 	prescan();
-	return false;
 }
 
 //-----------------------------------------------------------------------------

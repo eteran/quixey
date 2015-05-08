@@ -17,10 +17,7 @@ int main(int argc, char *argv[]) {
 		script_engine scripter;
 	
 		// load the program to execute
-		if(scripter.load_program(argv[1])) {
-			return 1;
-		}
-		
+		scripter.load_program(argv[1]);		
 		return scripter.start("main");
 	} catch(const error &e) {
 		std::cerr << "-------------------------------" << std::endl;
