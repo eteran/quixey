@@ -431,13 +431,10 @@ void script_engine::tokenize(std::vector<char>::const_iterator first, std::vecto
 	// our list... this is our sort of "compiling"
 	auto it = first;
 	try {		
-		do {
-		
+		while(1) {	
 			// eat up leading whitespace
 			skip_whitespace(it, last);
 			
-			// TODO(eteran): perform import here?
-
 			// eat up all the comments and whitespace
 			// loop cause there may be more than one in a row			
 			while(skip_comments(it, last)) {
@@ -445,8 +442,11 @@ void script_engine::tokenize(std::vector<char>::const_iterator first, std::vecto
 			}
 
 			token_ = process_token(first, it, last);
+			if(token_.type() == token::FINISHED) {
+				break;
+			}
 			program_.push_back(token_);
-		} while(token_.type() != token::FINISHED);
+		}
 	} catch(error &e) {	
 		e.line_number = std::count(first, it, '\n') + 1;
 		e.filename = imports_.top();
@@ -593,31 +593,46 @@ void script_engine::prescan() {
 //-----------------------------------------------------------------------------
 // Name: import_code
 //-----------------------------------------------------------------------------
-bool script_engine::import_code(const std::string &name) {
+void script_engine::import_code(const std::string &name) {
 	// the idea here is that imports_.top() will represent the file currently being imported
 	imports_.push(name);
-
+	
 	std::vector<char> source;
 	std::ifstream file(name);
 	
 	for(std::string line; std::getline(file, line); ) {
 	
+		
 		std::string temp = ltrim_copy(line);
 		if(starts_with(temp, "@import")) {
 			// we are looking at an import statement!
+			
+			std::string import_name = temp.substr(7);
+			trim(import_name);
+			
+			if(!starts_with(import_name, '"') || !ends_with(import_name, '"')) {
+				throw syntax_error();
+			}
+			
+			// TODO(eteran): force that this name is either absolute
+			//               or relative to the source file importing it
+			//               not relative to the quixey CWD
+			import_name = import_name.substr(1, import_name.size() - 2);
+			
+			import_code(import_name);
+			
+			source.push_back('\n');
+			continue;
+			
 		}
 		
-		
-		
-	
 		source.insert(source.end(), line.begin(), line.end());
 		source.push_back('\n');
 	}
 	
-	tokenize(source.begin(), source.end());
-	
+	tokenize(source.begin(), source.end());	
 	imports_.pop();
-	return false;
+	
 }
 
 
@@ -627,6 +642,8 @@ bool script_engine::import_code(const std::string &name) {
 bool script_engine::load_program(const std::string &name) {
 
 	import_code(name);
+	// make sure that the program has a terminator
+	program_.push_back(token::FINISHED);	
 	prescan();
 	return false;
 }

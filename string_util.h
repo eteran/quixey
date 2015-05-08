@@ -66,5 +66,18 @@ inline bool starts_with(const std::string &s, const std::string &prefix) {
 	return std::mismatch(prefix.begin(), prefix.end(), s.begin()).first == prefix.end();
 }
 
+//------------------------------------------------------------------------------
+// Name: ends_with
+//------------------------------------------------------------------------------
+inline bool ends_with(const std::string &s, char ch) {
+	return !s.empty() && s.back() == ch;
+}
+
+//------------------------------------------------------------------------------
+// Name: ends_with
+//------------------------------------------------------------------------------
+inline bool ends_with(const std::string &s, const std::string &suffix) {
+	return std::mismatch(suffix.rbegin(), suffix.rend(), s.rbegin()).first == suffix.rend();
+}
 
 #endif
