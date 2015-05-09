@@ -178,7 +178,7 @@ See `test4.qc` for some advanced usage of them such as type deduction.
 
 ## Lambdas
 
-lamdas aresupported, and can only be assigned to a variable of type `auto`:
+lamdas are supported, and can only be assigned to a variable of type `auto`:
 	
 	auto f = function() {
 		puts("hello world");
