@@ -441,11 +441,11 @@ void script_engine::tokenize(std::vector<char>::const_iterator first, std::vecto
 				skip_whitespace(it, last);
 			}
 
-			token_ = process_token(first, it, last);
-			if(token_.type() == token::FINISHED) {
+			token tok = process_token(first, it, last);
+			if(tok.type() == token::FINISHED) {
 				break;
 			}
-			program_.push_back(token_);
+			program_.push_back(tok);
 		}
 	} catch(error &e) {	
 		if(e.line_number == -1) {
