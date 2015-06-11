@@ -73,6 +73,7 @@ public:
 	void reset();
 	void load_program(const std::string &name);	
 	int start(const std::string &function);
+	int start(const std::string &function, const std::vector<variable> &args);
 
 private:
 	void dump_tokens();
@@ -101,8 +102,11 @@ private:
 	token::Type get_keyword(const std::string &s) const;
 	variable &get_variable(const std::string &name);
 	variable call();
+	variable call(const std::vector<variable> &args);
 	variable call(const function &func);
-	variable call(const std::string &name);
+	variable call(const function &func, const std::vector<variable> &args);
+	variable call(const std::string &name);	
+	variable call(const std::string &name, const std::vector<variable> &args);
 	variable function_literal();
 	variable array_literal();
 	void create_scope();

@@ -450,7 +450,7 @@ void script_engine::tokenize(std::vector<char>::const_iterator first, std::vecto
 	} catch(error &e) {	
 		if(e.line_number == -1) {
 			e.line_number = std::count(first, it, '\n') + 1;
-			e.filename = imports_.top();
+			e.filename    = imports_.top();
 		}
 		throw;
 	}
@@ -772,6 +772,28 @@ int script_engine::start(const std::string &function_name) {
 }
 
 //-----------------------------------------------------------------------------
+// Name: start
+// Desc: really all this does is simulate what it would look like to the
+//       interpreter if this function had been called by an already running
+//       script
+//-----------------------------------------------------------------------------
+int script_engine::start(const std::string &function_name, const std::vector<variable> &args) {
+	// setup call to entry point
+	const function &func = get_function(function_name);
+
+	program_counter_ = func.offset();
+
+	// intialize our token to point to main
+	token_ = token(token::IDENTIFIER, function_name);
+
+	// back up to opening (
+	--program_counter_;
+
+	// call entry point to start interpreting
+	return to_integer(call(args));
+}
+
+//-----------------------------------------------------------------------------
 // Name: exec_return
 //-----------------------------------------------------------------------------
 int script_engine::exec_return() {
@@ -1085,7 +1107,7 @@ variable script_engine::call(const function &func) {
 			get_token();
 			test_token<paren_expected>(token::LPAREN);
 		
-			return_value_.reset(variable(it->second(this)));
+			return_value_ = variable(it->second(this));
 		
 			get_token();
 			test_token<paren_expected>(token::RPAREN);
@@ -1155,8 +1177,101 @@ variable script_engine::call(const function &func) {
 //-----------------------------------------------------------------------------
 // Name: call
 //-----------------------------------------------------------------------------
+variable script_engine::call(const function &func, const std::vector<variable> &args) {
+
+	// is it a builtin?
+	if(!func.name().empty()) {
+		auto it = builtin_functions_.find(func.name());
+		if(it != builtin_functions_.end()) {
+		
+			get_token();
+			test_token<paren_expected>(token::LPAREN);
+		
+			return_value_ = variable(it->second(this));
+		
+			get_token();
+			test_token<paren_expected>(token::RPAREN);
+		
+			return return_value_;
+		}
+	}
+
+
+	std::vector<std::string> argument_names;
+
+	if(args.size() != func.param_count()) {
+		throw incorrect_param_count();
+	}
+
+
+	push_function();                  // save return location
+	program_counter_ = func.offset(); // set program_counter_ to start of function
+
+
+	get_parameter_metadata(args, argument_names); // load the function's parameters with
+                                                  // the values of the arguments
+												  
+
+	function_variables_.push(locals_t());
+	create_scope();
+
+	// finally, push the parameters onto the stack
+	for(size_t i = 0; i < args.size(); ++i) {
+		push_local(args[i], argument_names[i]);
+	}
+	
+	const int return_seen = interpret_block(); // interpret the function
+	program_counter_ = pop_function();   // reset the program pointer
+
+	destroy_scope();
+	function_variables_.pop();
+
+	// if no return seen, return int(0)
+	if(!return_seen) {
+		return_value_.reset(variable(0));
+	}
+
+	// force the variable to be a specific type
+	switch(func.type()) {
+	case token::STRING:
+		if(!is_string(return_value_)) throw invalid_type_conversion();
+		break;
+	case token::INT:
+		if(!is_integer(return_value_)) throw invalid_type_conversion();
+		break;
+	case token::CHAR:
+		if(!is_character(return_value_)) throw invalid_type_conversion();
+		break;
+	case token::AUTO:
+		// generic!
+		break;
+	default:
+		throw type_expected();
+	}
+
+	// should be setup by now
+	return return_value_;
+}
+
+//-----------------------------------------------------------------------------
+// Name: call
+//-----------------------------------------------------------------------------
 variable script_engine::call(const std::string &function_name) {
 	return call(get_function(function_name));
+}
+
+//-----------------------------------------------------------------------------
+// Name: call
+//-----------------------------------------------------------------------------
+variable script_engine::call(const std::string &function_name, const std::vector<variable> &args) {
+	return call(get_function(function_name), args);
+}
+
+//-----------------------------------------------------------------------------
+// Name: call
+//-----------------------------------------------------------------------------
+variable script_engine::call(const std::vector<variable> &args) {
+	return call(to_string(token_), args);
 }
 
 //-----------------------------------------------------------------------------
