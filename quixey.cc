@@ -1185,17 +1185,8 @@ variable quixey::call(const function &func, const std::vector<variable> &args) {
 	// is it a builtin?
 	if(!func.name().empty()) {
 		auto it = builtin_functions_.find(func.name());
-		if(it != builtin_functions_.end()) {
-		
-			get_token();
-			test_token<paren_expected>(token::LPAREN);
-		
-			return_value_ = variable(it->second(this));
-		
-			get_token();
-			test_token<paren_expected>(token::RPAREN);
-		
-			return return_value_;
+		if(it != builtin_functions_.end()) {		
+			throw builtins_cannot_be_entry_points();
 		}
 	}
 

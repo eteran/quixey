@@ -4,6 +4,12 @@
 
 #include "error.h"
 
+struct builtins_cannot_be_entry_points : error {
+	virtual const char *what() const throw() {
+		return "builtins_cannot_be_entry_points";
+	}
+};
+
 struct runtime_error : error {
 	virtual const char *what() const throw() {
 		return "runtime_error";
