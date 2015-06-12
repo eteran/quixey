@@ -2,10 +2,11 @@
 #ifndef VARIABLE_BASE_10012011_H_
 #define VARIABLE_BASE_10012011_H_
 
-#include "function.h"
 #include <memory>
 #include <string>
 #include <vector>
+
+class function;
 
 class variable_base {
 public:

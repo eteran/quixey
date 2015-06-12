@@ -1,6 +1,7 @@
 
 #include "string_variable.h"
 #include "char_variable.h"
+#include "function.h"
 #include "error.h"
 #include <cstdio>
 #include <memory>

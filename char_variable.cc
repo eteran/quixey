@@ -1,5 +1,6 @@
 
 #include "char_variable.h"
+#include "function.h"
 #include "error.h"
 #include <memory>
 

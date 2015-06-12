@@ -2,8 +2,9 @@
 #ifndef VARIABLE_20060121_H_
 #define VARIABLE_20060121_H_
 
-#include "function.h"
 #include "variable_base.h"
+
+class function;
 
 class variable {
 	friend char                                to_character(const variable &);
