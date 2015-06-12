@@ -807,7 +807,7 @@ int quixey::exec_return() {
 
 	// must be followed by a semicolon...
 	test_token<semicolon_expected>(token::SEMICOLON);
-	return_value_.reset(value);
+	return_value_ = value;
 	return 1;
 }
 
@@ -1150,7 +1150,7 @@ variable quixey::call(const function &func) {
 
 	// if no return seen, return int(0)
 	if(!return_seen) {
-		return_value_.reset(variable(0));
+		return_value_ = variable(0);
 	}
 
 	// force the variable to be a specific type
@@ -1216,7 +1216,7 @@ variable quixey::call(const function &func, const std::vector<variable> &args) {
 
 	// if no return seen, return int(0)
 	if(!return_seen) {
-		return_value_.reset(variable(0));
+		return_value_ = variable(0);
 	}
 
 	// force the variable to be a specific type
@@ -1567,7 +1567,7 @@ int quixey::exec_foreach_body(variable &it) {
 
 	const address_t loop_start = program_counter_;
 	for(int i = 0; i < sz; ++i) {
-		it.reset(var[variable(i)]);
+		it = var[variable(i)];
 		if(interpret_block()) {
 			destroy_scope();
 			return 1;
@@ -2422,7 +2422,7 @@ void quixey::atom(variable &value) {
 				get_token();
 				test_token<bracket_expected>(token::RBRACKET);
 
-				partial_value.reset(partial_value[index_expression]);
+				partial_value = partial_value[index_expression];
 			}
 			break;
 		case token::LPAREN:
@@ -2430,7 +2430,7 @@ void quixey::atom(variable &value) {
 				if(prescan_) {
 					throw function_during_prescan();
 				}
-				partial_value.reset(call(partial_value()));
+				partial_value = call(partial_value());
 			}
 			break;
 		default:
