@@ -1,6 +1,6 @@
 
-#ifndef SCRIPTENGINE_20060121_H_
-#define SCRIPTENGINE_20060121_H_
+#ifndef QUIXEY_20060121_H_
+#define QUIXEY_20060121_H_
 
 #include "function.h"
 #include "script_types.h"
@@ -20,9 +20,9 @@ struct local_variable {
 	variable    value;
 };
 
-class script_engine {
+class quixey {
 public:
-	script_engine();
+	quixey();
 
 public:
 	void eval_exp(variable &value);
@@ -44,7 +44,7 @@ private:
 	variable return_value_;
 
 private:
-	typedef std::function<int(script_engine *)>          builtin_t;
+	typedef std::function<int(quixey *)>          builtin_t;
 	typedef std::unordered_map<std::string, variable>    globals_t;
 	typedef std::deque<std::vector<local_variable>>      locals_t;
 	typedef std::unordered_map<std::string, builtin_t>   builtin_functions_t;

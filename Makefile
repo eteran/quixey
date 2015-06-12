@@ -21,7 +21,7 @@ CXX_FILES := \
 	function.cc \
 	function_variable.cc \
 	int_variable.cc \
-	script_engine.cc \
+	quixey.cc \
 	string_variable.cc \
 	token.cc \
 	variable.cc \
@@ -36,7 +36,7 @@ H_FILES := \
 	int_variable.h \
 	library_adaptor.h \
 	runtime_error.h \
-	script_engine.h \
+	quixey.h \
 	script_types.h \
 	string_util.h \
 	string_variable.h \

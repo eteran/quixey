@@ -1,5 +1,5 @@
 
-#include "script_engine.h"
+#include "quixey.h"
 #include "error.h"
 #include "library_adaptor.h"
 #include "string_util.h"
@@ -262,14 +262,14 @@ int call_is_array(variable x) {
 // example of a variadic built in function
 // much more complicated, but works great :)
 // by only taking a single param of type
-// script_engine * the function system knows
+// quixey * the function system knows
 // this is a variadic function, and will leave it
 // up to the implementer to pull arguments as needed
 // BE CAREFUL!
 //-----------------------------------------------------------------------------
 // Name: call_printf
 //-----------------------------------------------------------------------------
-int call_printf(script_engine *engine) {
+int call_printf(quixey *engine) {
 	
 	assert(engine);
 
@@ -353,9 +353,9 @@ int call_printf(script_engine *engine) {
 }
 
 //-----------------------------------------------------------------------------
-// Name: script_engine
+// Name: quixey
 //-----------------------------------------------------------------------------
-script_engine::script_engine() : block_depth_(0), prescan_(false) {
+quixey::quixey() : block_depth_(0), prescan_(false) {
 
 	// setup keywords
 	keywords_.emplace("break",    token::BREAK);
@@ -399,7 +399,7 @@ script_engine::script_engine() : block_depth_(0), prescan_(false) {
 //-----------------------------------------------------------------------------
 // Name: create_scope
 //-----------------------------------------------------------------------------
-void script_engine::create_scope() {
+void quixey::create_scope() {
 	assert(!function_variables_.empty());
 	function_variables_.top().push_front({});
 }
@@ -407,7 +407,7 @@ void script_engine::create_scope() {
 //-----------------------------------------------------------------------------
 // Name: destroy_scope
 //-----------------------------------------------------------------------------
-void script_engine::destroy_scope() {
+void quixey::destroy_scope() {
 	assert(!function_variables_.empty());
 	function_variables_.top().pop_front();
 }
@@ -416,7 +416,7 @@ void script_engine::destroy_scope() {
 // Name: register_function
 //-----------------------------------------------------------------------------
 template <class F>
-void script_engine::register_function(const std::string &name, F func) {
+void quixey::register_function(const std::string &name, F func) {
 	builtin_functions_.emplace(name, wrap_function(func));
 }
 
@@ -425,7 +425,7 @@ void script_engine::register_function(const std::string &name, F func) {
 // Desc: tokenizes the whole program array and places it
 //       into program_
 //-----------------------------------------------------------------------------
-void script_engine::tokenize(std::vector<char>::const_iterator first, std::vector<char>::const_iterator last) {
+void quixey::tokenize(std::vector<char>::const_iterator first, std::vector<char>::const_iterator last) {
 	// this will quickly run through the program
 	// tokenizing as it goes and pushing it the tokens onto
 	// our list... this is our sort of "compiling"
@@ -460,7 +460,7 @@ void script_engine::tokenize(std::vector<char>::const_iterator first, std::vecto
 // Name: is_type
 // Desc: returns true if the string is a typename
 //-----------------------------------------------------------------------------
-bool script_engine::is_type(const std::string &s) const {
+bool quixey::is_type(const std::string &s) const {
 	return types_.find(s) != types_.end();
 }
 
@@ -468,7 +468,7 @@ bool script_engine::is_type(const std::string &s) const {
 // Name: is_type
 // Desc: returns true if the token is a typename
 //-----------------------------------------------------------------------------
-bool script_engine::is_type(const token &token) const {
+bool quixey::is_type(const token &token) const {
 	return is_type(to_string(token));
 }
 
@@ -476,7 +476,7 @@ bool script_engine::is_type(const token &token) const {
 // Name: is_keyword
 // Desc: returns true if the string is a keyword
 //-----------------------------------------------------------------------------
-bool script_engine::is_keyword(const std::string &s) const {
+bool quixey::is_keyword(const std::string &s) const {
 	return get_keyword(s) != token::UNKNOWN;
 }
 
@@ -484,7 +484,7 @@ bool script_engine::is_keyword(const std::string &s) const {
 // Name: declare_function
 // Desc:
 //-----------------------------------------------------------------------------
-void script_engine::declare_function(const std::string &name, int return_type, int &brace) {
+void quixey::declare_function(const std::string &name, int return_type, int &brace) {
 
 	if(is_keyword(name)) {
 		throw function_name_is_keyword();
@@ -538,7 +538,7 @@ void script_engine::declare_function(const std::string &name, int return_type, i
 // Desc: Find the location of all functions in the
 //       program and store global variables
 //-----------------------------------------------------------------------------
-void script_engine::prescan() {
+void quixey::prescan() {
 	const address_t program_start = program_counter_;
 	int brace = 0;  // When 0, this var tells us that
 					// current source position is outside
@@ -595,7 +595,7 @@ void script_engine::prescan() {
 //-----------------------------------------------------------------------------
 // Name: import_code
 //-----------------------------------------------------------------------------
-void script_engine::import_code(std::string name) {
+void quixey::import_code(std::string name) {
 	
 	std::string parent_import;
 	std::string import_path;
@@ -658,7 +658,7 @@ void script_engine::import_code(std::string name) {
 //-----------------------------------------------------------------------------
 // Name: dump_tokens
 //-----------------------------------------------------------------------------
-void script_engine::dump_tokens() {
+void quixey::dump_tokens() {
 	std::cout << "--------------------\n";
 	for(auto token : program_) {
 		std::cout << "\t" << token << "\n";
@@ -669,7 +669,7 @@ void script_engine::dump_tokens() {
 //-----------------------------------------------------------------------------
 // Name: load_program
 //-----------------------------------------------------------------------------
-void script_engine::load_program(const std::string &name) {
+void quixey::load_program(const std::string &name) {
 
 	import_code(name);
 	// make sure that the program has a terminator
@@ -686,7 +686,7 @@ void script_engine::load_program(const std::string &name) {
 // Name: get_keyword
 // Desc: resolves a string keyword to a token
 //-----------------------------------------------------------------------------
-token::Type script_engine::get_keyword(const std::string &s) const {
+token::Type quixey::get_keyword(const std::string &s) const {
 	auto it = keywords_.find(s);
 	return (it != keywords_.end()) ? it->second : token::UNKNOWN;
 }
@@ -694,7 +694,7 @@ token::Type script_engine::get_keyword(const std::string &s) const {
 //-----------------------------------------------------------------------------
 // Name: get_function
 //-----------------------------------------------------------------------------
-const function &script_engine::get_function(const std::string &name) const {
+const function &quixey::get_function(const std::string &name) const {
 
 	auto it = functions_.find(name);
 	if(it == functions_.end()) {
@@ -707,7 +707,7 @@ const function &script_engine::get_function(const std::string &name) const {
 //-----------------------------------------------------------------------------
 // Name: get_variable
 //-----------------------------------------------------------------------------
-variable &script_engine::get_variable(const std::string &name) {
+variable &quixey::get_variable(const std::string &name) {
 
 	// first, see if it's a local variable
 	if(!function_variables_.empty()) {
@@ -735,7 +735,7 @@ variable &script_engine::get_variable(const std::string &name) {
 //-----------------------------------------------------------------------------
 // Name: reset
 //-----------------------------------------------------------------------------
-void script_engine::reset() {
+void quixey::reset() {
 
 	// clear out global variables and functions
 	global_variables_.clear();
@@ -754,7 +754,7 @@ void script_engine::reset() {
 //       interpreter if this function had been called by an already running
 //       script
 //-----------------------------------------------------------------------------
-int script_engine::start(const std::string &function_name) {
+int quixey::start(const std::string &function_name) {
 
 	// setup call to entry point
 	const function &func = get_function(function_name);
@@ -777,7 +777,7 @@ int script_engine::start(const std::string &function_name) {
 //       interpreter if this function had been called by an already running
 //       script
 //-----------------------------------------------------------------------------
-int script_engine::start(const std::string &function_name, const std::vector<variable> &args) {
+int quixey::start(const std::string &function_name, const std::vector<variable> &args) {
 	// setup call to entry point
 	const function &func = get_function(function_name);
 
@@ -796,7 +796,7 @@ int script_engine::start(const std::string &function_name, const std::vector<var
 //-----------------------------------------------------------------------------
 // Name: exec_return
 //-----------------------------------------------------------------------------
-int script_engine::exec_return() {
+int quixey::exec_return() {
 
 	// get return value, if any
 	variable value;
@@ -813,7 +813,7 @@ int script_engine::exec_return() {
 // Desc: common variable declaration code
 //-----------------------------------------------------------------------------
 template <class F>
-variable &script_engine::declare_variable(F func) {
+variable &quixey::declare_variable(F func) {
 	// get type
 	get_token();
 
@@ -890,7 +890,7 @@ variable &script_engine::declare_variable(F func) {
 //-----------------------------------------------------------------------------
 // Name: declare_local
 //-----------------------------------------------------------------------------
-variable &script_engine::declare_local() {
+variable &quixey::declare_local() {
 	return declare_variable([this](const variable &v, const std::string &name) {
 		push_local(v, name);
 	});	
@@ -899,7 +899,7 @@ variable &script_engine::declare_local() {
 //-----------------------------------------------------------------------------
 // Name: declare_global
 //-----------------------------------------------------------------------------
-variable &script_engine::declare_global() {
+variable &quixey::declare_global() {
 	return declare_variable([this](const variable &v, const std::string &name) {
 		push_global(v, name);
 	});
@@ -908,7 +908,7 @@ variable &script_engine::declare_global() {
 //-----------------------------------------------------------------------------
 // Name: get_arguments
 //-----------------------------------------------------------------------------
-std::vector<variable> script_engine::get_arguments() {
+std::vector<variable> quixey::get_arguments() {
 	std::vector<variable> arguments;
 
 	get_token();
@@ -938,7 +938,7 @@ std::vector<variable> script_engine::get_arguments() {
 //       interp_block() returns from its initial call, the final
 //       brace (or a return) in main() has been encountered.
 //-----------------------------------------------------------------------------
-int script_engine::interpret_block() {
+int quixey::interpret_block() {
 
 	const int block_start = block_depth_;
 
@@ -1077,14 +1077,14 @@ int script_engine::interpret_block() {
 //-----------------------------------------------------------------------------
 // Name: push_function
 //-----------------------------------------------------------------------------
-void script_engine::push_function() {
+void quixey::push_function() {
 	call_stack_.push(program_counter_);
 }
 
 //-----------------------------------------------------------------------------
 // Name: pop_function
 //-----------------------------------------------------------------------------
-address_t script_engine::pop_function() {
+address_t quixey::pop_function() {
 	if(call_stack_.empty()) {
 		throw return_outside_call();
 	}
@@ -1097,7 +1097,7 @@ address_t script_engine::pop_function() {
 //-----------------------------------------------------------------------------
 // Name: call
 //-----------------------------------------------------------------------------
-variable script_engine::call(const function &func) {
+variable quixey::call(const function &func) {
 
 	// is it a builtin?
 	if(!func.name().empty()) {
@@ -1177,7 +1177,7 @@ variable script_engine::call(const function &func) {
 //-----------------------------------------------------------------------------
 // Name: call
 //-----------------------------------------------------------------------------
-variable script_engine::call(const function &func, const std::vector<variable> &args) {
+variable quixey::call(const function &func, const std::vector<variable> &args) {
 
 	// is it a builtin?
 	if(!func.name().empty()) {
@@ -1256,28 +1256,28 @@ variable script_engine::call(const function &func, const std::vector<variable> &
 //-----------------------------------------------------------------------------
 // Name: call
 //-----------------------------------------------------------------------------
-variable script_engine::call(const std::string &function_name) {
+variable quixey::call(const std::string &function_name) {
 	return call(get_function(function_name));
 }
 
 //-----------------------------------------------------------------------------
 // Name: call
 //-----------------------------------------------------------------------------
-variable script_engine::call(const std::string &function_name, const std::vector<variable> &args) {
+variable quixey::call(const std::string &function_name, const std::vector<variable> &args) {
 	return call(get_function(function_name), args);
 }
 
 //-----------------------------------------------------------------------------
 // Name: call
 //-----------------------------------------------------------------------------
-variable script_engine::call(const std::vector<variable> &args) {
+variable quixey::call(const std::vector<variable> &args) {
 	return call(to_string(token_), args);
 }
 
 //-----------------------------------------------------------------------------
 // Name: call
 //-----------------------------------------------------------------------------
-variable script_engine::call() {
+variable quixey::call() {
 	return call(to_string(token_));
 }
 
@@ -1286,7 +1286,7 @@ variable script_engine::call() {
 // Desc: binds types/name to arguments of a function when a function gets
 //       called, until this, they are typeless and nameless
 //-----------------------------------------------------------------------------
-void script_engine::get_parameter_metadata(const std::vector<variable> &arguments, std::vector<std::string> &names) {
+void quixey::get_parameter_metadata(const std::vector<variable> &arguments, std::vector<std::string> &names) {
 
 	int i = 0;
 	do {
@@ -1340,7 +1340,7 @@ void script_engine::get_parameter_metadata(const std::vector<variable> &argument
 //-----------------------------------------------------------------------------
 // Name: push_local
 //-----------------------------------------------------------------------------
-void script_engine::push_local(const variable &v, const std::string &name) {
+void quixey::push_local(const variable &v, const std::string &name) {
 
 	locals_t &locals = function_variables_.top();
 	std::vector<local_variable> &current_scope = locals.front();
@@ -1357,7 +1357,7 @@ void script_engine::push_local(const variable &v, const std::string &name) {
 //-----------------------------------------------------------------------------
 // Name: push_global
 //-----------------------------------------------------------------------------
-void script_engine::push_global(const variable &v, const std::string &name) {
+void quixey::push_global(const variable &v, const std::string &name) {
 	if(global_variables_.insert(std::make_pair(name, v)).second == false) {
 		throw duplicate_global();
 	}
@@ -1366,14 +1366,14 @@ void script_engine::push_global(const variable &v, const std::string &name) {
 //-----------------------------------------------------------------------------
 // Name: is_variable
 //-----------------------------------------------------------------------------
-bool script_engine::is_variable(const token &tok) const {
+bool quixey::is_variable(const token &tok) const {
 	return is_variable(to_string(tok));
 }
 
 //-----------------------------------------------------------------------------
 // Name: is_variable
 //-----------------------------------------------------------------------------
-bool script_engine::is_variable(const std::string &name) const {
+bool quixey::is_variable(const std::string &name) const {
 
 	if(!function_variables_.empty()) {
 		const locals_t &locals = function_variables_.top();
@@ -1396,7 +1396,7 @@ bool script_engine::is_variable(const std::string &name) const {
 //-----------------------------------------------------------------------------
 // Name: is_function
 //-----------------------------------------------------------------------------
-bool script_engine::is_function(const std::string &name) const {
+bool quixey::is_function(const std::string &name) const {
 	auto it = functions_.find(name);
 	return it != functions_.end();
 }
@@ -1404,14 +1404,14 @@ bool script_engine::is_function(const std::string &name) const {
 //-----------------------------------------------------------------------------
 // Name: is_function
 //-----------------------------------------------------------------------------
-bool script_engine::is_function(const token &tok) const {
+bool quixey::is_function(const token &tok) const {
 	return is_function(to_string(tok));
 }
 
 //-----------------------------------------------------------------------------
 // Name: exec_if
 //-----------------------------------------------------------------------------
-int script_engine::exec_if() {
+int quixey::exec_if() {
 
 	// make sure that the expression is in parens following the if
 	if(peek_token().type() != token::LPAREN) {
@@ -1480,7 +1480,7 @@ int script_engine::exec_if() {
 //-----------------------------------------------------------------------------
 // Name: exec_while
 //-----------------------------------------------------------------------------
-int script_engine::exec_while() {
+int quixey::exec_while() {
 
 	// save location of top of while loop
 	// minus one because we want to reprocess the while each time
@@ -1513,7 +1513,7 @@ int script_engine::exec_while() {
 //-----------------------------------------------------------------------------
 // Name: exec_do
 //-----------------------------------------------------------------------------
-int script_engine::exec_do() {
+int quixey::exec_do() {
 	// save location of top of do loop
 	const address_t do_start = program_counter_ - 1;
 
@@ -1544,7 +1544,7 @@ int script_engine::exec_do() {
 //-----------------------------------------------------------------------------
 // Name: find_eob
 //-----------------------------------------------------------------------------
-void script_engine::find_eob() {
+void quixey::find_eob() {
 	int brace = 1;
 
 	// for this to work, we need to eat the first {
@@ -1562,7 +1562,7 @@ void script_engine::find_eob() {
 //-----------------------------------------------------------------------------
 // Name: 
 //-----------------------------------------------------------------------------
-int script_engine::exec_foreach_body(variable &it) {
+int quixey::exec_foreach_body(variable &it) {
 	
 	get_token();
 	test_token<colon_expected>(token::COLON);
@@ -1594,7 +1594,7 @@ int script_engine::exec_foreach_body(variable &it) {
 //-----------------------------------------------------------------------------
 // Name: 
 //-----------------------------------------------------------------------------
-int script_engine::exec_for_body() {
+int quixey::exec_for_body() {
 	// should be followed by a semicolon
 	test_token<semicolon_expected>(token::SEMICOLON);
 
@@ -1647,7 +1647,7 @@ int script_engine::exec_for_body() {
 //-----------------------------------------------------------------------------
 // Name: exec_for
 //-----------------------------------------------------------------------------
-int script_engine::exec_for() {
+int quixey::exec_for() {
 
 	create_scope();
 
@@ -1674,14 +1674,14 @@ int script_engine::exec_for() {
 //-----------------------------------------------------------------------------
 // Name: put_back
 //-----------------------------------------------------------------------------
-void script_engine::put_back() {
+void quixey::put_back() {
 	--program_counter_;
 }
 
 //-----------------------------------------------------------------------------
 // Name: get_token
 //-----------------------------------------------------------------------------
-token &script_engine::get_token() {
+token &quixey::get_token() {
 	token_ = peek_token();
 	++program_counter_;
 	return token_;
@@ -1690,7 +1690,7 @@ token &script_engine::get_token() {
 //-----------------------------------------------------------------------------
 // Name: peek_token
 //-----------------------------------------------------------------------------
-token &script_engine::peek_token() {
+token &quixey::peek_token() {
 	if(program_counter_ >= program_.size()) {
 		throw unexpected_eof();
 	}
@@ -1702,7 +1702,7 @@ token &script_engine::peek_token() {
 // Name: process_token
 //-----------------------------------------------------------------------------
 template <class In>
-token script_engine::process_token(In first, In &it, In end) const {
+token quixey::process_token(In first, In &it, In end) const {
 
 	(void)first;
 
@@ -1965,7 +1965,7 @@ token script_engine::process_token(In first, In &it, In end) const {
 // Name: eval_exp
 // Desc: entry point of expression parser
 //-----------------------------------------------------------------------------
-void script_engine::eval_exp(variable &value) {
+void quixey::eval_exp(variable &value) {
 	get_token();
 
 	if(token_.type() == token::SEMICOLON) {
@@ -1982,7 +1982,7 @@ void script_engine::eval_exp(variable &value) {
 // Name: eval_exp0
 // Desc: Process an assignment expression
 //-----------------------------------------------------------------------------
-void script_engine::eval_exp0(variable &value) {
+void quixey::eval_exp0(variable &value) {
 
 	if(token_.type() == token::IDENTIFIER) {
 		if(is_variable(token_)) {
@@ -2064,7 +2064,7 @@ void script_engine::eval_exp0(variable &value) {
 // Name: eval_exp1
 // Desc: Process logical operations
 //-----------------------------------------------------------------------------
-void script_engine::eval_exp1(variable &value) {
+void quixey::eval_exp1(variable &value) {
 	int op;
 
 	eval_exp2(value);
@@ -2092,7 +2092,7 @@ void script_engine::eval_exp1(variable &value) {
 // Name: eval_exp2
 // Desc: Process binary operations
 //-----------------------------------------------------------------------------
-void script_engine::eval_exp2(variable &value) {
+void quixey::eval_exp2(variable &value) {
 	int op;
 
 	eval_exp3(value);
@@ -2125,7 +2125,7 @@ void script_engine::eval_exp2(variable &value) {
 // Name: eval_exp3
 // Desc: Process relational operators
 //-----------------------------------------------------------------------------
-void script_engine::eval_exp3(variable &value) {
+void quixey::eval_exp3(variable &value) {
 	int op;
 
 	eval_exp4(value);
@@ -2169,7 +2169,7 @@ void script_engine::eval_exp3(variable &value) {
 // Name: eval_exp4
 // Desc: Process shift operations
 //-----------------------------------------------------------------------------
-void script_engine::eval_exp4(variable &value) {
+void quixey::eval_exp4(variable &value) {
 	int op;
 
 	eval_exp5(value);
@@ -2198,7 +2198,7 @@ void script_engine::eval_exp4(variable &value) {
 // Name: eval_exp5
 // Desc: Add or subtract two terms
 //-----------------------------------------------------------------------------
-void script_engine::eval_exp5(variable &value) {
+void quixey::eval_exp5(variable &value) {
 	int op;
 
 	eval_exp6(value);
@@ -2227,7 +2227,7 @@ void script_engine::eval_exp5(variable &value) {
 // Name: eval_exp6
 // Desc: Multiply or divide two factors
 //-----------------------------------------------------------------------------
-void script_engine::eval_exp6(variable &value) {
+void quixey::eval_exp6(variable &value) {
 
 	int op;
 
@@ -2261,7 +2261,7 @@ void script_engine::eval_exp6(variable &value) {
 // Name: eval_exp7
 // Desc: Is a unary +, - or ~
 //-----------------------------------------------------------------------------
-void script_engine::eval_exp7(variable &value) {
+void quixey::eval_exp7(variable &value) {
 
 	int op;
 
@@ -2292,7 +2292,7 @@ void script_engine::eval_exp7(variable &value) {
 // Name: eval_exp8
 // Desc: Process parenthesized expression
 //-----------------------------------------------------------------------------
-void script_engine::eval_exp8(variable &value) {
+void quixey::eval_exp8(variable &value) {
 
 	switch(token_.type()) {
 	case token::LPAREN:
@@ -2313,7 +2313,7 @@ void script_engine::eval_exp8(variable &value) {
 // Name: atom
 // Desc: Find value of number, variable, or function.
 //-----------------------------------------------------------------------------
-void script_engine::atom(variable &value) {
+void quixey::atom(variable &value) {
 
 	// so, we could just reuse value this whole time...
 	// but, if we did that, then we would lose the original
@@ -2456,7 +2456,7 @@ void script_engine::atom(variable &value) {
 //-----------------------------------------------------------------------------
 // Name: array_literal
 //-----------------------------------------------------------------------------
-variable script_engine::array_literal() {
+variable quixey::array_literal() {
 	test_token<brace_expected>(token::LBRACKET);
 		
 	std::vector<variable_base::pointer> contents;
@@ -2487,7 +2487,7 @@ variable script_engine::array_literal() {
 //-----------------------------------------------------------------------------
 // Name: function_literal
 //-----------------------------------------------------------------------------
-variable script_engine::function_literal() {
+variable quixey::function_literal() {
 	
 	get_token();
 	test_token<paren_expected>(token::LPAREN);

@@ -1,6 +1,6 @@
 
 #include <iostream>
-#include "script_engine.h"
+#include "quixey.h"
 #include "error.h"
 
 //-----------------------------------------------------------------------------
@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	try {
-		script_engine scripter;
+		quixey scripter;
 	
 		// load the program to execute
 		scripter.load_program(argv[1]);		

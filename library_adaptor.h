@@ -3,7 +3,7 @@
 #define LIBRARY_ADAPTOR_H_
 
 #include "error.h"
-#include "script_engine.h"
+#include "quixey.h"
 #include <functional>
 #include <type_traits>
 #include <cassert>
@@ -16,7 +16,7 @@ namespace {
 
 	template <>
 	struct argument_handler<int> {
-		argument_handler(script_engine *engine) : engine_(engine) {
+		argument_handler(quixey *engine) : engine_(engine) {
 			assert(engine);
 		}
 
@@ -26,12 +26,12 @@ namespace {
 			return to_integer(ret);
 		}
 	private:
-		script_engine *const engine_;
+		quixey *const engine_;
 	};
 
 	template <>
 	struct argument_handler<char> {
-		argument_handler(script_engine *engine) : engine_(engine) {
+		argument_handler(quixey *engine) : engine_(engine) {
 			assert(engine);
 		}
 
@@ -41,12 +41,12 @@ namespace {
 			return static_cast<char>(to_integer(ret));
 		}
 	private:
-		script_engine *const engine_;
+		quixey *const engine_;
 	};
 
 	template <>
 	struct argument_handler<std::string> {
-		argument_handler(script_engine *engine) : engine_(engine) {
+		argument_handler(quixey *engine) : engine_(engine) {
 			assert(engine);
 		}
 
@@ -56,12 +56,12 @@ namespace {
 			return to_string(ret);
 		}
 	private:
-		script_engine *const engine_;
+		quixey *const engine_;
 	};
 
 	template <>
 	struct argument_handler<variable> {
-		argument_handler(script_engine *engine) : engine_(engine) {
+		argument_handler(quixey *engine) : engine_(engine) {
 			assert(engine);
 		}
 
@@ -71,25 +71,25 @@ namespace {
 			return ret;
 		}
 	private:
-		script_engine *const engine_;
+		quixey *const engine_;
 	};
 
 	template <>
-	struct argument_handler<script_engine *> {
-		argument_handler(script_engine *engine) : engine_(engine) {
+	struct argument_handler<quixey *> {
+		argument_handler(quixey *engine) : engine_(engine) {
 			assert(engine);
 		}
 
-		script_engine *operator()() const {
+		quixey *operator()() const {
 			return engine_;
 		}
 	private:
-		script_engine *const engine_;
+		quixey *const engine_;
 	};
 
 
 	template <class T>
-	void fetch_and_test_token_x(script_engine *engine, token::Type expected) {
+	void fetch_and_test_token_x(quixey *engine, token::Type expected) {
 		assert(engine);
 		const token &tok = engine->get_token();
 		if(tok.type() != expected) {
@@ -107,7 +107,7 @@ namespace {
 		explicit function_helper(F f) : f_(f) {
 		}
 
-		int operator()(script_engine *engine) const {
+		int operator()(quixey *engine) const {
 			(void)engine;
 			assert(engine);
 			return f_();
@@ -122,7 +122,7 @@ namespace {
 		explicit function_helper(F f) : f_(f) {
 		}
 
-		int operator()(script_engine *engine) const {
+		int operator()(quixey *engine) const {
 			assert(engine);
 			const A1 arg1 = argument_handler<A1>(engine)();
 			return f_(arg1);
@@ -138,7 +138,7 @@ namespace {
 		explicit function_helper(F f) : f_(f) {
 		}
 
-		int operator()(script_engine *engine) const {
+		int operator()(quixey *engine) const {
 
 			assert(engine);
 			const A1 arg1 = argument_handler<A1>(engine)();
@@ -156,7 +156,7 @@ namespace {
 		explicit function_helper(F f) : f_(f) {
 		}
 
-		int operator()(script_engine *engine) const {
+		int operator()(quixey *engine) const {
 
 			assert(engine);
 			const A1 arg1 = argument_handler<A1>(engine)();
@@ -176,7 +176,7 @@ namespace {
 		explicit function_helper(F f) : f_(f) {
 		}
 
-		int operator()(script_engine *engine) const {
+		int operator()(quixey *engine) const {
 
 			assert(engine);
 			const A1 arg1 = argument_handler<A1>(engine)();
@@ -198,7 +198,7 @@ namespace {
 		explicit function_helper(F f) : f_(f) {
 		}
 
-		int operator()(script_engine *engine) const {
+		int operator()(quixey *engine) const {
 
 			assert(engine);
 			const A1 arg1 = argument_handler<A1>(engine)();
@@ -219,7 +219,7 @@ namespace {
 }
 
 template <class R, class...Args>
-std::function<int(script_engine *engine)> wrap_function(R(*f)(Args...)) {
+std::function<int(quixey *engine)> wrap_function(R(*f)(Args...)) {
 	static_assert(sizeof...(Args) <= 5, "Function Has Too Many Arguments");
 	return function_helper<decltype(f), Args...>(f);
 }
