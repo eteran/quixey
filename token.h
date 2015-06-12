@@ -9,7 +9,7 @@
 
 class token {
 public:
-	enum Type  {
+	enum Type : uint16_t {
 
 		UNKNOWN        = 0xffff,
 
@@ -102,7 +102,6 @@ public:
 public:
 	Type type() const        { return token_type_; }
 	Type type_class() const  { return static_cast<Type>(token_type_ & 0xf000); }
-
 
 private:
 	std::string string_;
