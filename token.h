@@ -104,8 +104,18 @@ public:
 	Type type_class() const  { return static_cast<Type>(token_type_ & 0xf000); }
 
 private:
+
+	// TODO(eteran): use a string table for string literals, and enable 
+	//               string pooling
 	std::string string_;
 	Type        token_type_;
+	
+public:
+	// TODO(eteran): use some sort of string pooling to not have LOTS of 
+	//               copies of the filename here, perhaps some sort of
+	//               debug info table?
+	std::string filename;
+	int         line_number;
 
 private:
 	friend std::string to_string(const token &t);

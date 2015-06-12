@@ -2,7 +2,7 @@
 #include "token.h"
 #include "error.h"
 
-token::token(Type type, const std::string &string) : string_(string), token_type_(type) {
+token::token(Type type, const std::string &string) : string_(string), token_type_(type), line_number(-1) {
 }
 
 token::token(Type type) : token(type, "") {
@@ -14,10 +14,12 @@ token::token() : token_type_(UNKNOWN) {
 token &token::operator=(const token &rhs) {
 	string_     = rhs.string_;
 	token_type_ = rhs.token_type_;
+	filename    = rhs.filename;
+	line_number = rhs.line_number;
 	return *this;
 }
 
-token::token(const token &other) : string_(other.string_), token_type_(other.token_type_) {
+token::token(const token &other) : string_(other.string_), token_type_(other.token_type_), filename(other.filename), line_number(other.line_number) {
 }
 
 std::string to_string(const token &t) {

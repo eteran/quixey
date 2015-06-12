@@ -444,6 +444,10 @@ void quixey::tokenize(std::vector<char>::const_iterator first, std::vector<char>
 			if(tok.type() == token::FINISHED) {
 				break;
 			}
+			
+			tok.filename    = imports_.top();
+			tok.line_number = std::count(first, it, '\n') + 1;
+			
 			program_.push_back(tok);
 		}
 	} catch(error &e) {	
@@ -1668,6 +1672,17 @@ int quixey::exec_for() {
 	}
 	
 	return exec_for_body();
+}
+
+//-----------------------------------------------------------------------------
+// Name: last_token
+//-----------------------------------------------------------------------------
+const token &quixey::last_token() const {
+	if(program_counter_ != 0) {
+		return program_[program_counter_ - 1];
+	} else {
+		return program_[program_counter_];
+	}
 }
 
 //-----------------------------------------------------------------------------

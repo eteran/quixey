@@ -70,6 +70,7 @@ private:
 
 public:
 	token &get_token();
+	const token &last_token() const;
 	void reset();
 	void load_program(const std::string &name);	
 	int start(const std::string &function);
