@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
 		std::cerr << "-------------------------------" << std::endl;
 		std::cerr << "An Error Occurred: " << e.what() << std::endl;
 
-		const token &tok = scripter.last_token();
+		const token &tok = scripter.current_token();
 
 		if(e.line_number >= 0) {
 			std::cerr << "On Line Number: " << e.line_number << std::endl;

@@ -44,7 +44,7 @@ private:
 	variable return_value_;
 
 private:
-	typedef std::function<int(quixey *)>          builtin_t;
+	typedef std::function<int(quixey *)>                 builtin_t;
 	typedef std::unordered_map<std::string, variable>    globals_t;
 	typedef std::deque<std::vector<local_variable>>      locals_t;
 	typedef std::unordered_map<std::string, builtin_t>   builtin_functions_t;
@@ -69,8 +69,8 @@ private:
 	std::stack<std::string> imports_;
 
 public:
+	const token &current_token() const;
 	token &get_token();
-	const token &last_token() const;
 	void reset();
 	void load_program(const std::string &name);	
 	int start(const std::string &function);
@@ -116,7 +116,7 @@ private:
 	variable &declare_local();
 	void destroy_scope();
 	void find_eob();
-	void get_parameter_metadata(const std::vector<variable> &arguments, std::vector<std::string> &names);
+	std::vector<std::string> get_parameter_metadata(const std::vector<variable> &arguments);
 	void push_function();
 	void push_global(const variable &v, const std::string &name);
 	void push_local(const variable &v, const std::string &name);
@@ -128,9 +128,6 @@ private:
 	
 	template <class In>
 	token process_token(In first, In &it, In end) const;
-
-public:
-	const token &current_token() const { return token_; }
 
 public:
 	template<class T>

@@ -1121,7 +1121,6 @@ variable quixey::call(const function &func) {
 
 
 	const std::vector<variable> args = get_arguments();
-	std::vector<std::string> argument_names;
 
 	if(args.size() != func.param_count()) {
 		throw incorrect_param_count();
@@ -1132,9 +1131,8 @@ variable quixey::call(const function &func) {
 	program_counter_ = func.offset(); // set program_counter_ to start of function
 
 
-	get_parameter_metadata(args, argument_names); // load the function's parameters with
-                                                  // the values of the arguments
-												  
+	// load the function's parameters with the values of the arguments
+	const std::vector<std::string> argument_names = get_parameter_metadata(args); 
 
 	function_variables_.push(locals_t());
 	create_scope();
@@ -1190,9 +1188,6 @@ variable quixey::call(const function &func, const std::vector<variable> &args) {
 		}
 	}
 
-
-	std::vector<std::string> argument_names;
-
 	if(args.size() != func.param_count()) {
 		throw incorrect_param_count();
 	}
@@ -1202,9 +1197,8 @@ variable quixey::call(const function &func, const std::vector<variable> &args) {
 	program_counter_ = func.offset(); // set program_counter_ to start of function
 
 
-	get_parameter_metadata(args, argument_names); // load the function's parameters with
-                                                  // the values of the arguments
-												  
+	// load the function's parameters with the values of the arguments
+	const std::vector<std::string> argument_names = get_parameter_metadata(args); 
 
 	function_variables_.push(locals_t());
 	create_scope();
@@ -1280,8 +1274,9 @@ variable quixey::call() {
 // Desc: binds types/name to arguments of a function when a function gets
 //       called, until this, they are typeless and nameless
 //-----------------------------------------------------------------------------
-void quixey::get_parameter_metadata(const std::vector<variable> &arguments, std::vector<std::string> &names) {
+std::vector<std::string> quixey::get_parameter_metadata(const std::vector<variable> &arguments) {
 
+	std::vector<std::string> names;
 	int i = 0;
 	do {
 		// process comma-separated list of parameters
@@ -1329,6 +1324,7 @@ void quixey::get_parameter_metadata(const std::vector<variable> &arguments, std:
 	test_token<paren_expected>(token::RPAREN);
 
 	assert(arguments.size() == names.size());
+	return names;
 }
 
 //-----------------------------------------------------------------------------
@@ -1663,17 +1659,6 @@ int quixey::exec_for() {
 	}
 	
 	return exec_for_body();
-}
-
-//-----------------------------------------------------------------------------
-// Name: last_token
-//-----------------------------------------------------------------------------
-const token &quixey::last_token() const {
-	if(program_counter_ != 0) {
-		return program_[program_counter_ - 1];
-	} else {
-		return program_[program_counter_];
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -2544,4 +2529,11 @@ variable quixey::function_literal() {
 	}
 	
 	return partial_value;
+}
+
+//-----------------------------------------------------------------------------
+// Name: current_token
+//-----------------------------------------------------------------------------
+const token &quixey::current_token() const {
+	return token_;
 }
