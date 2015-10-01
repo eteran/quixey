@@ -218,7 +218,6 @@ variable variable::operator[](const variable &index) const {
 	return variable((*var_)[*(index.var_)]);
 }
 
-
 char to_character(const variable &var) {
 	if(!var.var_) {
 		throw uninitialized_variable_used();

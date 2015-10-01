@@ -7,7 +7,7 @@ OBJ_DIR := .obj
 
 .SUFFIXES:
 
-$(OBJ_DIR)/%.o: %.cc
+$(OBJ_DIR)/%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -MMD -c $< -o $@
 
 TARGET = quixey
@@ -16,16 +16,16 @@ CXXFLAGS := -std=c++11 -pedantic -W -Wall -O2 -g3
 LDFLAGS  := $(CXXFLAGS)
 
 CXX_FILES := \
-	array_variable.cc \
-	char_variable.cc \
-	function.cc \
-	function_variable.cc \
-	int_variable.cc \
-	quixey.cc \
-	string_variable.cc \
-	token.cc \
-	variable.cc \
-	main.cc
+	array_variable.cpp \
+	char_variable.cpp \
+	function.cpp \
+	function_variable.cpp \
+	int_variable.cpp \
+	quixey.cpp \
+	string_variable.cpp \
+	token.cpp \
+	variable.cpp \
+	main.cpp
 
 H_FILES := \
 	array_variable.h \
@@ -45,7 +45,7 @@ H_FILES := \
 	variable_base.h \
 	variable.h \
 
-O_FILES := $(patsubst %.cc, $(OBJ_DIR)/%.o, $(CXX_FILES))
+O_FILES := $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(CXX_FILES))
 D_FILES := $(O_FILES:.o=.d)
 
 SOURCEFILES :=	$(H_FILES) $(C_FILES)

@@ -1967,6 +1967,80 @@ void quixey::eval_exp(variable &value) {
 	}
 }
 
+//-----------------------------------------------------------------------------
+// Name: do_assignment
+// Desc: 
+//-----------------------------------------------------------------------------
+bool quixey::do_assignment(variable &var_ref, variable &value, address_t restore_point) {
+	get_token();
+
+
+	// if a var, see if assignment
+	switch(token_.type()) {
+	case token::ASSIGN:
+		get_token();
+		eval_exp0(value);
+		var_ref = value;
+		return true;
+	case token::PLUS_EQ:
+		get_token();
+		eval_exp0(value);
+		var_ref += value;
+		return true;
+	case token::MINUS_EQ:
+		get_token();
+		eval_exp0(value);
+		var_ref -= value;
+		return true;
+	case token::AND_EQ:
+		get_token();
+		eval_exp0(value);
+		var_ref &= value;
+		return true;
+	case token::OR_EQ:
+		get_token();
+		eval_exp0(value);
+		var_ref |= value;
+		return true;
+	case token::XOR_EQ:
+		get_token();
+		eval_exp0(value);
+		var_ref ^= value;
+		return true;
+	case token::MUL_EQ:
+		get_token();
+		eval_exp0(value);
+		var_ref *= value;
+		return true;
+	case token::MOD_EQ:
+		get_token();
+		eval_exp0(value);
+		var_ref %= value;
+		return true;
+	case token::DIV_EQ:
+		get_token();
+		eval_exp0(value);
+		var_ref /= value;
+		return true;
+	case token::LSHIFT_EQ:
+		get_token();
+		eval_exp0(value);
+		var_ref <<= value;
+		return true;
+	case token::RSHIFT_EQ:
+		get_token();
+		eval_exp0(value);
+		var_ref >>= value;
+		return true;
+	default:
+		// roll back this read
+		program_counter_ = restore_point;
+		put_back();
+		get_token();
+	}
+	
+	return false;
+}
 
 //-----------------------------------------------------------------------------
 // Name: eval_exp0
@@ -1976,74 +2050,39 @@ void quixey::eval_exp0(variable &value) {
 
 	if(token_.type() == token::IDENTIFIER) {
 		if(is_variable(token_)) {
+		
+		
+			address_t restore_point = program_counter_;
 
 			// holds name of var receiving the assignment
 			const token temp_token = token_;
 			variable &var_ref      = get_variable(to_string(temp_token));
-			get_token();
 
-			// if a var, see if assignment
-			switch(token_.type()) {
-			case token::ASSIGN:
+			// handle l-value array expressions
+			if(peek_token().type() == token::LBRACKET) {
+							
+				// read the l-bracket
 				get_token();
-				eval_exp0(value);
-				var_ref = value;
-				return;
-			case token::PLUS_EQ:
+				
+				// evaluate the index expression
+				variable index_expression;
+				eval_exp(index_expression);
+
+				// get the r-bracket
 				get_token();
-				eval_exp0(value);
-				var_ref += value;
+				test_token<bracket_expected>(token::RBRACKET);
+				variable var_ref2 = var_ref[index_expression];
+
+			
+				if(do_assignment(var_ref2, value, restore_point)) {
+					return;
+				}
+			} else if(do_assignment(var_ref, value, restore_point)) {
 				return;
-			case token::MINUS_EQ:
-				get_token();
-				eval_exp0(value);
-				var_ref -= value;
-				return;
-			case token::AND_EQ:
-				get_token();
-				eval_exp0(value);
-				var_ref &= value;
-				return;
-			case token::OR_EQ:
-				get_token();
-				eval_exp0(value);
-				var_ref |= value;
-				return;
-			case token::XOR_EQ:
-				get_token();
-				eval_exp0(value);
-				var_ref ^= value;
-				return;
-			case token::MUL_EQ:
-				get_token();
-				eval_exp0(value);
-				var_ref *= value;
-				return;
-			case token::MOD_EQ:
-				get_token();
-				eval_exp0(value);
-				var_ref %= value;
-				return;
-			case token::DIV_EQ:
-				get_token();
-				eval_exp0(value);
-				var_ref /= value;
-				return;
-			case token::LSHIFT_EQ:
-				get_token();
-				eval_exp0(value);
-				var_ref <<= value;
-				return;
-			case token::RSHIFT_EQ:
-				get_token();
-				eval_exp0(value);
-				var_ref >>= value;
-				return;
-			default:
-				// roll back this read
-				put_back();
-				token_ = temp_token;
 			}
+			
+			
+
 		}
 	}
 

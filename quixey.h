@@ -122,6 +122,7 @@ private:
 	void push_local(const variable &v, const std::string &name);
 	void put_back();
 	std::vector<char> load_preprocessed_file(const std::string &name);
+	bool do_assignment(variable &var_ref, variable &value, address_t restore_point);
 
 	template <class F>
 	variable &declare_variable(F func);
