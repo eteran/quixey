@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <cassert>
 
-namespace {
+namespace detail {
 
 // helpers to fetch arguments more genrically
 template <class T>
@@ -222,7 +222,7 @@ private:
 template <class R, class...Args>
 std::function<int(quixey *engine)> wrap_function(R(*f)(Args...)) {
 	static_assert(sizeof...(Args) <= 5, "Function Has Too Many Arguments");
-	return function_helper<decltype(f), Args...>(f);
+	return detail::function_helper<decltype(f), Args...>(f);
 }
 
 #endif
