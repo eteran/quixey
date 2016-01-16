@@ -94,7 +94,7 @@ public:
 public:
 
 	token(Type token, const std::string &string);
-	token(Type token);
+	explicit token(Type token);
 	token();
 	token(const token &other);
 	token &operator=(const token &rhs);

@@ -676,7 +676,7 @@ void quixey::load_program(const std::string &name) {
 
 	import_code(name);
 	// make sure that the program has a terminator
-	program_.push_back(token::FINISHED);
+	program_.emplace_back(token::FINISHED);
 	
 #if 0
 	dump_tokens();

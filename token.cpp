@@ -8,7 +8,7 @@ token::token(Type type, const std::string &string) : string_(string), token_type
 token::token(Type type) : token(type, "") {
 }
 
-token::token() : token_type_(UNKNOWN) {
+token::token() : token_type_(UNKNOWN), line_number(-1) {
 }
 
 token &token::operator=(const token &rhs) {
