@@ -155,7 +155,6 @@ languages. **The following is not allowed in quixey**.
 
 **NOTE:** Every function has a return type. If the end of a function is reached with no return, then an implicit
           `return 0;` is executed at function exit.
-	return 0;
 	
 `int`, `char`, `string`. `auto`
 
