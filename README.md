@@ -5,7 +5,7 @@ Quixey
 Quixey is a C-ish scripting language where I toy around with a few ideas that I
 have found interesting over the years. It inherits a many things from C, such 
 as the scoping rules, most operators, and general curly brace syntax. However, 
-unlike C, it has a native `string` type, `foreach`, lambdas, an `auto` type, 
+unlike C, it has a native `string` type, ranged `forh`, lambdas, an `auto` type, 
 and much more.
 
 I don't intend for this language to be taken particularly seriously, but it 
@@ -26,8 +26,8 @@ change types in a given scope. For example:
 	
 	// since this function returns the auto type, we must capture the result
 	// in an auto type as well. 
-	auto n1 = foo(1); // n == "Hello" and is of type string
-	auto n2 = foo(0); // n == 42 and is of type int
+	auto n1 = foo(1); // n1 == "Hello" and is of type string
+	auto n2 = foo(0); // n2 == 42 and is of type int
 	
 	// Now we can use is_integer and is_string to decide what to do with the 
 	// values as needed.
