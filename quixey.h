@@ -73,8 +73,8 @@ public:
 	token &get_token();
 	void reset();
 	void load_program(const std::string &name);	
-	int start(const std::string &function);
-	int start(const std::string &function, const std::vector<variable> &args);
+	int exec(const std::string &function);
+	int exec(const std::string &function, const std::vector<variable> &args);
 
 private:
 	void dump_tokens();

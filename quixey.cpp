@@ -752,12 +752,12 @@ void quixey::reset() {
 }
 
 //-----------------------------------------------------------------------------
-// Name: start
+// Name: exec
 // Desc: really all this does is simulate what it would look like to the
 //       interpreter if this function had been called by an already running
 //       script
 //-----------------------------------------------------------------------------
-int quixey::start(const std::string &function_name) {
+int quixey::exec(const std::string &function_name) {
 
 	// setup call to entry point
 	const function &func = get_function(function_name);
@@ -775,12 +775,12 @@ int quixey::start(const std::string &function_name) {
 }
 
 //-----------------------------------------------------------------------------
-// Name: start
+// Name: exec
 // Desc: really all this does is simulate what it would look like to the
 //       interpreter if this function had been called by an already running
 //       script
 //-----------------------------------------------------------------------------
-int quixey::start(const std::string &function_name, const std::vector<variable> &args) {
+int quixey::exec(const std::string &function_name, const std::vector<variable> &args) {
 	// setup call to entry point
 	const function &func = get_function(function_name);
 
@@ -794,6 +794,178 @@ int quixey::start(const std::string &function_name, const std::vector<variable> 
 
 	// call entry point to start interpreting
 	return to_integer(call(args));
+}
+
+//-----------------------------------------------------------------------------
+// Name: call
+//-----------------------------------------------------------------------------
+variable quixey::call(const std::string &function_name) {
+	return call(get_function(function_name));
+}
+
+//-----------------------------------------------------------------------------
+// Name: call
+//-----------------------------------------------------------------------------
+variable quixey::call(const std::string &function_name, const std::vector<variable> &args) {
+	return call(get_function(function_name), args);
+}
+
+//-----------------------------------------------------------------------------
+// Name: call
+//-----------------------------------------------------------------------------
+variable quixey::call(const std::vector<variable> &args) {
+	return call(to_string(token_), args);
+}
+
+//-----------------------------------------------------------------------------
+// Name: call
+//-----------------------------------------------------------------------------
+variable quixey::call() {
+	return call(to_string(token_));
+}
+
+//-----------------------------------------------------------------------------
+// Name: call
+//-----------------------------------------------------------------------------
+variable quixey::call(const function &func) {
+
+	// is it a builtin?
+	if(!func.name().empty()) {
+		auto it = builtin_functions_.find(func.name());
+		if(it != builtin_functions_.end()) {
+		
+			get_token();
+			test_token<paren_expected>(token::LPAREN);
+		
+			return_value_ = variable(it->second(this));
+		
+			get_token();
+			test_token<paren_expected>(token::RPAREN);
+		
+			return return_value_;
+		}
+	}
+
+
+	const std::vector<variable> args = get_arguments();
+
+	if(args.size() != func.param_count()) {
+		throw incorrect_param_count();
+	}
+
+
+	push_function();                  // save return location
+	program_counter_ = func.offset(); // set program_counter_ to start of function
+
+
+	// load the function's parameters with the values of the arguments
+	const std::vector<std::string> argument_names = get_parameter_metadata(args); 
+
+	function_variables_.push(locals_t());
+	create_scope();
+
+	// finally, push the parameters onto the stack
+	for(size_t i = 0; i < args.size(); ++i) {
+		push_local(args[i], argument_names[i]);
+	}
+	
+	const int return_seen = interpret_block(); // interpret the function
+	program_counter_ = pop_function();   // reset the program pointer
+
+	destroy_scope();
+	function_variables_.pop();
+
+	// if no return seen, return int(0)
+	if(!return_seen) {
+		return_value_ = variable(0);
+	}
+
+	// force the variable to be a specific type
+	switch(func.type()) {
+	case token::STRING:
+		if(!is_string(return_value_)) throw invalid_type_conversion();
+		break;
+	case token::INT:
+		if(!is_integer(return_value_)) throw invalid_type_conversion();
+		break;
+	case token::CHAR:
+		if(!is_character(return_value_)) throw invalid_type_conversion();
+		break;
+	case token::AUTO:
+		// generic!
+		break;
+	default:
+		throw type_expected();
+	}
+
+	// should be setup by now
+	return return_value_;
+}
+
+//-----------------------------------------------------------------------------
+// Name: call
+//-----------------------------------------------------------------------------
+variable quixey::call(const function &func, const std::vector<variable> &args) {
+
+	// is it a builtin?
+	if(!func.name().empty()) {
+		auto it = builtin_functions_.find(func.name());
+		if(it != builtin_functions_.end()) {		
+			throw builtins_cannot_be_entry_points();
+		}
+	}
+
+	if(args.size() != func.param_count()) {
+		throw incorrect_param_count();
+	}
+
+
+	push_function();                  // save return location
+	program_counter_ = func.offset(); // set program_counter_ to start of function
+
+
+	// load the function's parameters with the values of the arguments
+	const std::vector<std::string> argument_names = get_parameter_metadata(args); 
+
+	function_variables_.push(locals_t());
+	create_scope();
+
+	// finally, push the parameters onto the stack
+	for(size_t i = 0; i < args.size(); ++i) {
+		push_local(args[i], argument_names[i]);
+	}
+	
+	const int return_seen = interpret_block(); // interpret the function
+	program_counter_ = pop_function();   // reset the program pointer
+
+	destroy_scope();
+	function_variables_.pop();
+
+	// if no return seen, return int(0)
+	if(!return_seen) {
+		return_value_ = variable(0);
+	}
+
+	// force the variable to be a specific type
+	switch(func.type()) {
+	case token::STRING:
+		if(!is_string(return_value_)) throw invalid_type_conversion();
+		break;
+	case token::INT:
+		if(!is_integer(return_value_)) throw invalid_type_conversion();
+		break;
+	case token::CHAR:
+		if(!is_character(return_value_)) throw invalid_type_conversion();
+		break;
+	case token::AUTO:
+		// generic!
+		break;
+	default:
+		throw type_expected();
+	}
+
+	// should be setup by now
+	return return_value_;
 }
 
 //-----------------------------------------------------------------------------
@@ -1095,178 +1267,6 @@ address_t quixey::pop_function() {
 	const address_t return_address = call_stack_.top();
 	call_stack_.pop();
 	return return_address;
-}
-
-//-----------------------------------------------------------------------------
-// Name: call
-//-----------------------------------------------------------------------------
-variable quixey::call(const function &func) {
-
-	// is it a builtin?
-	if(!func.name().empty()) {
-		auto it = builtin_functions_.find(func.name());
-		if(it != builtin_functions_.end()) {
-		
-			get_token();
-			test_token<paren_expected>(token::LPAREN);
-		
-			return_value_ = variable(it->second(this));
-		
-			get_token();
-			test_token<paren_expected>(token::RPAREN);
-		
-			return return_value_;
-		}
-	}
-
-
-	const std::vector<variable> args = get_arguments();
-
-	if(args.size() != func.param_count()) {
-		throw incorrect_param_count();
-	}
-
-
-	push_function();                  // save return location
-	program_counter_ = func.offset(); // set program_counter_ to start of function
-
-
-	// load the function's parameters with the values of the arguments
-	const std::vector<std::string> argument_names = get_parameter_metadata(args); 
-
-	function_variables_.push(locals_t());
-	create_scope();
-
-	// finally, push the parameters onto the stack
-	for(size_t i = 0; i < args.size(); ++i) {
-		push_local(args[i], argument_names[i]);
-	}
-	
-	const int return_seen = interpret_block(); // interpret the function
-	program_counter_ = pop_function();   // reset the program pointer
-
-	destroy_scope();
-	function_variables_.pop();
-
-	// if no return seen, return int(0)
-	if(!return_seen) {
-		return_value_ = variable(0);
-	}
-
-	// force the variable to be a specific type
-	switch(func.type()) {
-	case token::STRING:
-		if(!is_string(return_value_)) throw invalid_type_conversion();
-		break;
-	case token::INT:
-		if(!is_integer(return_value_)) throw invalid_type_conversion();
-		break;
-	case token::CHAR:
-		if(!is_character(return_value_)) throw invalid_type_conversion();
-		break;
-	case token::AUTO:
-		// generic!
-		break;
-	default:
-		throw type_expected();
-	}
-
-	// should be setup by now
-	return return_value_;
-}
-
-//-----------------------------------------------------------------------------
-// Name: call
-//-----------------------------------------------------------------------------
-variable quixey::call(const function &func, const std::vector<variable> &args) {
-
-	// is it a builtin?
-	if(!func.name().empty()) {
-		auto it = builtin_functions_.find(func.name());
-		if(it != builtin_functions_.end()) {		
-			throw builtins_cannot_be_entry_points();
-		}
-	}
-
-	if(args.size() != func.param_count()) {
-		throw incorrect_param_count();
-	}
-
-
-	push_function();                  // save return location
-	program_counter_ = func.offset(); // set program_counter_ to start of function
-
-
-	// load the function's parameters with the values of the arguments
-	const std::vector<std::string> argument_names = get_parameter_metadata(args); 
-
-	function_variables_.push(locals_t());
-	create_scope();
-
-	// finally, push the parameters onto the stack
-	for(size_t i = 0; i < args.size(); ++i) {
-		push_local(args[i], argument_names[i]);
-	}
-	
-	const int return_seen = interpret_block(); // interpret the function
-	program_counter_ = pop_function();   // reset the program pointer
-
-	destroy_scope();
-	function_variables_.pop();
-
-	// if no return seen, return int(0)
-	if(!return_seen) {
-		return_value_ = variable(0);
-	}
-
-	// force the variable to be a specific type
-	switch(func.type()) {
-	case token::STRING:
-		if(!is_string(return_value_)) throw invalid_type_conversion();
-		break;
-	case token::INT:
-		if(!is_integer(return_value_)) throw invalid_type_conversion();
-		break;
-	case token::CHAR:
-		if(!is_character(return_value_)) throw invalid_type_conversion();
-		break;
-	case token::AUTO:
-		// generic!
-		break;
-	default:
-		throw type_expected();
-	}
-
-	// should be setup by now
-	return return_value_;
-}
-
-//-----------------------------------------------------------------------------
-// Name: call
-//-----------------------------------------------------------------------------
-variable quixey::call(const std::string &function_name) {
-	return call(get_function(function_name));
-}
-
-//-----------------------------------------------------------------------------
-// Name: call
-//-----------------------------------------------------------------------------
-variable quixey::call(const std::string &function_name, const std::vector<variable> &args) {
-	return call(get_function(function_name), args);
-}
-
-//-----------------------------------------------------------------------------
-// Name: call
-//-----------------------------------------------------------------------------
-variable quixey::call(const std::vector<variable> &args) {
-	return call(to_string(token_), args);
-}
-
-//-----------------------------------------------------------------------------
-// Name: call
-//-----------------------------------------------------------------------------
-variable quixey::call() {
-	return call(to_string(token_));
 }
 
 //-----------------------------------------------------------------------------
@@ -2552,7 +2552,7 @@ variable quixey::function_literal() {
 		}
 	}
 
-	const variable partial_value = variable(function(token::AUTO, function_location, param_count));
+	auto partial_value = variable(function(token::AUTO, function_location, param_count));
 
 	// the token following a function's right paren should ALWAYS be
 	// a left brace

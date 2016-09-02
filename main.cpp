@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
 #endif
 		// load the program to execute
 		scripter.load_program(argv[1]);
-		return scripter.start("main");
+		return scripter.exec("main");
 #if 0
 	} catch(const error &e) {
 		std::cerr << "-------------------------------" << std::endl;
