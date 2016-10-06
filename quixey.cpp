@@ -286,9 +286,9 @@ int call_printf(quixey *engine) {
 						engine->get_token();
 						engine->test_token<comma_expected>(token::COMMA);
 
-						variable x;
-						engine->eval_exp(x);
-						std::cout << to_character(x);
+						variable v;
+						engine->eval_exp(v);
+						std::cout << to_character(v);
 					} while(0);
 					break;
 
@@ -297,9 +297,9 @@ int call_printf(quixey *engine) {
 						engine->get_token();
 						engine->test_token<comma_expected>(token::COMMA);
 
-						variable x;
-						engine->eval_exp(x);
-						std::cout << std::dec << static_cast<unsigned long>(to_integer(x));
+						variable v;
+						engine->eval_exp(v);
+						std::cout << std::dec << static_cast<unsigned long>(to_integer(v));
 					} while(0);
 					break;
 
@@ -308,9 +308,9 @@ int call_printf(quixey *engine) {
 						engine->get_token();
 						engine->test_token<comma_expected>(token::COMMA);
 
-						variable x;
-						engine->eval_exp(x);
-						std::cout << std::dec << to_integer(x);
+						variable v;
+						engine->eval_exp(v);
+						std::cout << std::dec << to_integer(v);
 					} while(0);
 					break;
 
@@ -319,9 +319,9 @@ int call_printf(quixey *engine) {
 						engine->get_token();
 						engine->test_token<comma_expected>(token::COMMA);
 
-						variable x;
-						engine->eval_exp(x);
-						std::cout << std::hex << to_integer(x);
+						variable v;
+						engine->eval_exp(v);
+						std::cout << std::hex << to_integer(v);
 					} while(0);
 					break;
 
@@ -330,9 +330,9 @@ int call_printf(quixey *engine) {
 						engine->get_token();
 						engine->test_token<comma_expected>(token::COMMA);
 
-						variable x;
-						engine->eval_exp(x);
-						std::cout << to_string(x);
+						variable v;
+						engine->eval_exp(v);
+						std::cout << to_string(v);
 					} while(0);
 					break;
 				default:
@@ -2406,19 +2406,19 @@ void quixey::atom(variable &value) {
 			get_token();
 			
 			if(peek_token().type() != token::RPAREN) {
-				variable value;
-				eval_exp(value);
+				variable param_value;
+				eval_exp(param_value);
 
 				switch(var_type) {
 				case token::STRING:
-					partial_value = variable(to_string(value));
+					partial_value = variable(to_string(param_value));
 					break;
 				case token::INT:
-					partial_value = variable(to_integer(value));
+					partial_value = variable(to_integer(param_value));
 					break;
 				case token::CHAR:
 					// special case integer -> character explicit conversion
-					partial_value = variable(static_cast<char>(to_integer(value)));					
+					partial_value = variable(static_cast<char>(to_integer(param_value)));					
 					break;
 				default:
 					throw type_expected();
