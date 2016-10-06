@@ -5,7 +5,7 @@ Quixey
 Quixey is a C-ish scripting language where I toy around with a few ideas that I
 have found interesting over the years. It inherits a many things from C, such 
 as the scoping rules, most operators, and general curly brace syntax. However, 
-unlike C, it has a native `string` type, ranged `forh`, lambdas, an `auto` type, 
+unlike C, it has a native `string` type, ranged `for`, lambdas, an `auto` type, 
 and much more.
 
 I don't intend for this language to be taken particularly seriously, but it 
@@ -72,7 +72,7 @@ languages. **The following is not allowed in quixey**.
 * `\xnnn` : Hexadecimal number (nnn)
 * `\nnn`  :  number (nnn)
 
-**Note**: in octal and hex decimal escape sequences, there is no limit on the number
+**NOTE**: in octal and hex decimal escape sequences, there is no limit on the number
           of digits but the least significant digits will be used (as happens in gcc).
           So for example `'\x12345678'` is functionally the same as `'\x78'`
 
@@ -117,12 +117,12 @@ languages. **The following is not allowed in quixey**.
 * `string`
 * `auto` (assumes the type of the first thing assigned to it)
 
-**Note**: modifiers such as unsigned are not supported
+**NOTE**: modifiers such as unsigned are not supported
 
 ## Supported Keywords:
 
-**Note** : unlike C/C++ keywords like `if`, `else`, `for`, `do`, `while` **require** the 
-           curly braces, they are not optional
+**NOTE**: unlike C/C++ keywords like `if`, `else`, `for`, `do`, `while` **require** the 
+          curly braces, they are not optional
 
 `if`, `else`:
 
@@ -133,10 +133,10 @@ languages. **The following is not allowed in quixey**.
 
 `for`:
 
-**Note**: you may declare a variable in the initialization part of the
+**NOTE**: you may declare a variable in the initialization part of the
           for loop, this variable only exists inside the loop. Just like in C++.
 
-**Note**: the for each style syntax requires that you declare a variable as the
+**NOTE**: the for each style syntax requires that you declare a variable as the
           initializer.
 
 	for(i = 0; i < 10; i += 1) { }
@@ -153,7 +153,7 @@ languages. **The following is not allowed in quixey**.
 	
 `return`:
 
-**NOTE:** Every function has a return type. If the end of a function is reached with no return, then an implicit
+**NOTE**: Every function has a return type. If the end of a function is reached with no return, then an implicit
           `return 0;` is executed at function exit.
 	
 `int`, `char`, `string`. `auto`
